@@ -1,0 +1,5 @@
+package support
+
+class TestApp {
+
+}

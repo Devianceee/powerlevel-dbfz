@@ -1,0 +1,5 @@
+package stubs
+
+class DbfzLoginServerStub {
+
+}

@@ -1,0 +1,5 @@
+package simulation
+
+class GlickoSimulation {
+
+}

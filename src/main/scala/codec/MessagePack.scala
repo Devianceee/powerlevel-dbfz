@@ -1,0 +1,5 @@
+package codec
+
+class MessagePack {
+
+}

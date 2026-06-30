@@ -14,8 +14,8 @@ object App {
       ratingRepository = DoobieRatingRepository(xa)
 
       leaderboardService = LeaderboardService(playerRepository, ratingRepository)
-      replayService = ReplayService(client, replayRepository, playerRepository, ratingRepository)
-      pollingService = PollingService(replayService)
+      replayService      = ReplayService(client, replayRepository, playerRepository, ratingRepository)
+      pollingService     = PollingService(replayService)
 
       routes = ApiRoutes(leaderboardService, replayService) <+> UiRoutes(leaderboardService, replayService)
 

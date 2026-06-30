@@ -1,5 +1,5 @@
 package database
 
-class Database {
+object Database {
 
 }

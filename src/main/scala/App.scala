@@ -1,54 +1,23 @@
 import cats.effect.{IO, Resource}
-import config.AppConfig
+import config.Config
 
 object App {
-  val resource: Resource[IO, Unit] = {
-
+  val resource: Resource[IO, Unit] =
     for {
-
-      config <- AppConfig.resource
-
-      xa <- Database.transactor(config.database)
+      config <- Config.read
+      xa     <- Database.resource(config.database)
 
       client <- ReplayClient.resource(config.dbfz)
 
-      playerRepository =
-        DoobiePlayerRepository(xa)
+      playerRepository = DoobiePlayerRepository(xa)
+      replayRepository = DoobieReplayRepository(xa)
+      ratingRepository = DoobieRatingRepository(xa)
 
-      replayRepository =
-        DoobieReplayRepository(xa)
+      leaderboardService = LeaderboardService(playerRepository, ratingRepository)
+      replayService = ReplayService(client, replayRepository, playerRepository, ratingRepository)
+      pollingService = PollingService(replayService)
 
-      ratingRepository =
-        DoobieRatingRepository(xa)
-
-      leaderboardService =
-        LeaderboardService(
-          playerRepository,
-          ratingRepository
-        )
-
-      replayService =
-        ReplayService(
-          client,
-          replayRepository,
-          playerRepository,
-          ratingRepository
-        )
-
-      pollingService =
-        PollingService(
-          replayService
-        )
-
-      routes =
-        ApiRoutes(
-          leaderboardService,
-          replayService
-        ) <+>
-          UiRoutes(
-            leaderboardService,
-            replayService
-          )
+      routes = ApiRoutes(leaderboardService, replayService) <+> UiRoutes(leaderboardService, replayService)
 
       _ <-
         EmberServerBuilder
@@ -58,12 +27,8 @@ object App {
           .withHttpApp(routes.orNotFound)
           .build
 
-      _ <-
-        Resource.make(
-          pollingService.start
-        )(_.cancel)
+      _ <- Resource.make(pollingService.start)(_.cancel)
 
     } yield ()
 
-  }
 }

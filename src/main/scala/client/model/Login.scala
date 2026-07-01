@@ -1,5 +1,5 @@
 package client.model
 
-object Login {
+import domain.model.{LoginId, SteamId}
 
-}
+case class Login(steamId: SteamId, loginId: LoginId)

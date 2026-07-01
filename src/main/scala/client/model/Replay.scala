@@ -1,5 +1,3 @@
 package client.model
 
-object Replay {
-
-}
+case class Replay() { ??? }

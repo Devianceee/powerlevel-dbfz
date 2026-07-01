@@ -1,5 +1,9 @@
 package service
 
-class LeaderboardService {
+trait LeaderboardService {
+  
+}
+
+final class LeaderboardServiceImpl extends LeaderboardService {
 
 }

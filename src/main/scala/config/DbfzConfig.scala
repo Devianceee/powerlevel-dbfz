@@ -5,7 +5,7 @@ import ciris._
 import ciris.http4s._
 import org.http4s.Uri
 
-case class DbfzConfig(baseUri: Uri, gameVersion: Int, steamId: Long, dbfzPlayerId: Long)
+case class DbfzConfig(baseUri: Uri, gameVersion: Int, steamId: Long, loginId: Long)
 
 object DbfzConfig {
   def read: ConfigValue[Effect, DbfzConfig] = {
@@ -18,9 +18,9 @@ object DbfzConfig {
     val steamId: ConfigValue[Effect, Long] =
       env("DBFZ_STEAM_ID").as[Long]
 
-    val dbfzPlayerId: ConfigValue[Effect, Long] =
-      env("DBFZ_PLAYER_ID").as[Long]
+    val dbfzLoginId: ConfigValue[Effect, Long] =
+      env("DBFZ_LOGIN_ID").as[Long]
 
-    (baseUri, gameVersion, steamId, dbfzPlayerId).mapN(DbfzConfig(_, _, _, _))
+    (baseUri, gameVersion, steamId, dbfzLoginId).mapN(DbfzConfig(_, _, _, _))
   }
 }

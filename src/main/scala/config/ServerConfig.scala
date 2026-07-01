@@ -3,15 +3,14 @@ package config
 import cats.syntax.all.catsSyntaxTuple2Semigroupal
 import ciris.*
 import ciris.http4s.*
-import com.comcast.ip4s.{Host, Port}
+import com.comcast.ip4s.Port
 
-case class ServerConfig(host: Host, port: Port)
+case class ServerConfig(port: Port)
 
 object ServerConfig {
   def read: ConfigValue[Effect, ServerConfig] = {
-    val host = ciris.env("SERVER_HOST").as[Host]
-    val port = ciris.env("SERVER_PORT").as[Port]
+    val port: ConfigValue[Effect, Port] = env("SERVER_PORT").as[Port].option.map(_.getOrElse(Port.fromInt(8080).get))
 
-    (host, port).mapN(ServerConfig(_, _))
+    port.map(ServerConfig(_))
   }
 }

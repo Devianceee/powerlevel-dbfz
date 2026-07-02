@@ -1,0 +1,5 @@
+package rating
+
+class GlickoCalculator {
+
+}

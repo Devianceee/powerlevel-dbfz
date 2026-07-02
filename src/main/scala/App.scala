@@ -1,51 +1,79 @@
+import cats.MonoidK.ops.toAllMonoidKOps
 import cats.effect.{IO, Resource}
 import client.{AuthToken, HttpLoginClient, HttpReplayClient, LoginClient, ReplayClient}
 import config.{Config, DbfzConfig}
 import database.{Database, FlywayMigration}
+import org.http4s.HttpApp
 import org.http4s.client.Client
 import org.http4s.ember.client.EmberClientBuilder
-import org.http4s.ember.server.EmberServerBuilder
-import repository.{DoobiePlayerRepository, DoobieRatingRepository, DoobieReplayRepository}
-import routes.{ApiRoutes, UiRoutes}
-import service.{LeaderboardService, ReplayService, ReplayServiceImpl}
+import repository.*
+import routes.*
+import service.*
 import com.comcast.ip4s.*
-import scheduler.ReplayPolling
+import query.*
+import rating.GlickoCalculator
+import scheduler.*
 
 import scala.concurrent.duration.DurationInt
 
 object App {
-  val resource: Resource[IO, Unit] =
+
+  final case class Application(
+      httpApp: HttpApp[IO],
+      poller: ReplayPolling,
+      backfill: BackfillService
+  )
+
+  def resource(config: Config): Resource[IO, Application] =
     for {
-      config <- Config.read
-      _      <- Resource.eval(FlywayMigration.migrate(config.database))
-      xa     <- Database.resource(config.database)
+      // -- Setup database and repositories --
+      _  <- Resource.eval(FlywayMigration.migrate(config.database))
+      xa <- Database.resource(config.database)
 
-      playerRepository = DoobiePlayerRepository(xa)
-      replayRepository = DoobieReplayRepository(xa)
-      ratingRepository = DoobieRatingRepository(xa)
+      playerRepository        = DoobiePlayerRepository(xa)
+      replayRepository        = DoobieReplayRepository(xa)
+      ratingRepository        = DoobieRatingRepository(xa)
+      ratingHistoryRepository = DoobieRatingHistoryRepository(xa)
 
+      calculator = GlickoCalculator()
       replayClient <- replayClientResource(config)
 
-      replayService  = ReplayServiceImpl(replayClient, replayRepository, playerRepository, ratingRepository)
-      pollingService = ReplayPollingImpl(replayService)
+      // -- Setup WRITE services + scheduler (isn't used by UI + API) --
+      replayIngestionService =
+        ReplayIngestionServiceImpl(
+          replayClient,
+          playerRepository,
+          replayRepository,
+          ratingRepository,
+          ratingHistoryRepository,
+          calculator
+        )
 
-      leaderboardService = LeaderboardService(playerRepository, ratingRepository)
+      backfillService = BackfillServiceImpl(
+        replayClient,
+        replayIngestionService
+      )
 
-      apiRoutes = ApiRoutes(leaderboardService)
-      uiRoutes  = UiRoutes(leaderboardService)
+      pollingService = ReplayPollingImpl(replayClient, replayIngestionService)
 
-      routes = uiRoutes <+> apiRoutes
+      // -- Setup READ services + routes (used by UI + API) --
+      leaderboardQueries = DoobieLeaderboardQueries(xa)
+      playerQueries      = DoobiePlayerQueries(xa)
 
-      _ <-
-        EmberServerBuilder
-          .default[IO]
-          .withHost(ipv4"0.0.0.0")
-          .withPort(config.server.port)
-          .withHttpApp(routes.orNotFound)
-          .build
+      leaderboardService = LeaderboardServiceImpl(leaderboardQueries)
+      playerService      = PlayerServiceImpl(playerQueries)
 
-      _ <- Resource.make(pollingService.start)(_.cancel)
-    } yield ()
+      apiRoutes    = ApiRoutes(leaderboardService, playerService).routes
+      uiRoutes     = UiRoutes(leaderboardService, playerService).routes
+      healthRoutes = HealthRoutes.routes
+
+      httpApp = (healthRoutes <+> uiRoutes <+> apiRoutes).orNotFound
+
+    } yield Application(
+      httpApp = httpApp,
+      poller = pollingService,
+      backfill = backfillService
+    )
 
   private def httpClient: Resource[IO, Client[IO]] =
     EmberClientBuilder

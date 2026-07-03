@@ -1,5 +1,7 @@
 package domain.model
 
+import ciris.ConfigDecoder
+
 opaque type SteamId = Long
 
 object SteamId {
@@ -8,4 +10,7 @@ object SteamId {
   extension (id: SteamId) {
     def value: Long = id
   }
+
+  given ConfigDecoder[String, SteamId] =
+    ConfigDecoder[String, Long].map(SteamId.apply)
 }

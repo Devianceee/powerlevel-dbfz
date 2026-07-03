@@ -1,7 +1,7 @@
 import cats.MonoidK.ops.toAllMonoidKOps
 import cats.effect.kernel.Outcome
 import cats.effect.{ExitCode, IO, Resource}
-import client.{AuthToken, HttpLoginClient, HttpReplayClient, LoginClient, ReplayClient}
+import client.{HttpLoginClient, HttpReplayClient, LoginClient, ReplayClient}
 import config.{Config, DbfzConfig}
 import database.{Database, FlywayMigration}
 import org.http4s.HttpApp
@@ -11,6 +11,7 @@ import repository.*
 import routes.*
 import service.*
 import com.comcast.ip4s.*
+import domain.model.{AuthToken, PlayerId}
 import org.http4s.ember.server.EmberServerBuilder
 import query.*
 import rating.GlickoCalculator
@@ -111,15 +112,16 @@ object App {
 
   private def replayClient(
       client: Client[IO],
-      token: AuthToken
+      token: AuthToken,
+      playerId: PlayerId
   ): ReplayClient =
-    HttpReplayClient(client, token)
+    HttpReplayClient(client, token, playerId)
 
   private def replayClientResource(config: Config): Resource[IO, ReplayClient] =
     for {
       client <- httpClient
       login = loginClient(client, config.dbfzConfig)
-      token <- Resource.eval(login.login)
-      replay = replayClient(client, token)
+      loginResp <- Resource.eval(login.login)
+      replay = replayClient(client, loginResp.authToken, loginResp.playerId)
     } yield replay
 }

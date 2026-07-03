@@ -1,11 +1,12 @@
 package config
 
-import cats.implicits.catsSyntaxTuple4Semigroupal
-import ciris._
-import ciris.http4s._
+import cats.implicits.catsSyntaxTuple3Semigroupal
+import ciris.*
+import ciris.http4s.*
+import domain.model.SteamId
 import org.http4s.Uri
 
-case class DbfzConfig(baseUri: Uri, gameVersion: Int, steamId: Long, loginId: Long)
+case class DbfzConfig(baseUri: Uri, gameVersion: Int, steamId: SteamId)
 
 object DbfzConfig {
   def read: ConfigValue[Effect, DbfzConfig] = {
@@ -15,12 +16,9 @@ object DbfzConfig {
     val gameVersion: ConfigValue[Effect, Int] =
       env("DBFZ_GAME_VERSION").as[Int]
 
-    val steamId: ConfigValue[Effect, Long] =
-      env("DBFZ_STEAM_ID").as[Long]
+    val steamId: ConfigValue[Effect, SteamId] =
+      env("DBFZ_STEAM_ID").as[SteamId]
 
-    val dbfzLoginId: ConfigValue[Effect, Long] =
-      env("DBFZ_LOGIN_ID").as[Long]
-
-    (baseUri, gameVersion, steamId, dbfzLoginId).mapN(DbfzConfig(_, _, _, _))
+    (baseUri, gameVersion, steamId).mapN(DbfzConfig(_, _, _))
   }
 }

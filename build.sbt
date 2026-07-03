@@ -66,6 +66,14 @@ lazy val root = (project in file("."))
       "-feature",
       "-unchecked",
       "-Wunused:all",
+      "-Xfatal-warnings",
+      "-Ywarn-unused:implicits",
+      "-Ywarn-unused:imports",
+      "-Ywarn-unused:locals",
+      "-Ywarn-unused:params",
+      "-Ywarn-unused:patvars",
+      "-Ywarn-unused:privates",
+      "-Ywarn-value-discard",
       "-Wnonunit-statement"
     )
   )

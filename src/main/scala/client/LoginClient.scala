@@ -1,18 +1,29 @@
 package client
 
 import cats.effect.IO
+import client.model.{LoginRequest, LoginResponse}
 import config.DbfzConfig
+import org.http4s.{Method, Request, Uri}
 import org.http4s.client.Client
+import util.MessagePackCodec
 
 trait LoginClient {
-  def login: IO[AuthToken]
+  def login: IO[LoginResponse]
 }
 
 final case class HttpLoginClient(client: Client[IO], config: DbfzConfig) extends LoginClient {
-  override def login: IO[AuthToken] =
-    // Implement the login logic here, e.g., send a request to the login endpoint
-    // and return a ReplayClient instance with the obtained auth token.
-    ???
-}
+  override def login: IO[LoginResponse] = {
+    val body = MessagePackCodec.loginEncoder(LoginRequest(config.steamId))
+    val req  = Request[IO](
+      method = Method.POST,
+      uri = Uri.unsafeFromString(s"${config.baseUri}/api/user/login")
+    ).withEntity(body)
 
-final case class AuthToken(value: String)
+    for {
+      rawHexResponse <- client.expect[String](req)
+      loginResponse  <- IO.fromEither(
+        MessagePackCodec.decodeLoginResponse(rawHexResponse).left.map(err => new RuntimeException(err))
+      )
+    } yield loginResponse
+  }
+}

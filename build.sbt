@@ -54,6 +54,9 @@ lazy val root = (project in file("."))
       "org.typelevel" %% "log4cats-slf4j"  % "2.7.1",
       "ch.qos.logback" % "logback-classic" % "1.5.18",
 
+      "org.wvlet.airframe" %% "airframe-msgpack" % "2026.2.2",
+      "org.wvlet.airframe" %% "airframe-codec" % "2026.2.2",
+
       // Tests
       "org.scalameta" %% "munit"             % "1.2.1" % Test,
       "org.typelevel" %% "munit-cats-effect" % "2.1.0" % Test

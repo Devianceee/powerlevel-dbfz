@@ -1,5 +1,6 @@
 import cats.MonoidK.ops.toAllMonoidKOps
-import cats.effect.{IO, Resource}
+import cats.effect.kernel.Outcome
+import cats.effect.{ExitCode, IO, Resource}
 import client.{AuthToken, HttpLoginClient, HttpReplayClient, LoginClient, ReplayClient}
 import config.{Config, DbfzConfig}
 import database.{Database, FlywayMigration}
@@ -10,6 +11,7 @@ import repository.*
 import routes.*
 import service.*
 import com.comcast.ip4s.*
+import org.http4s.ember.server.EmberServerBuilder
 import query.*
 import rating.GlickoCalculator
 import scheduler.*
@@ -17,7 +19,6 @@ import scheduler.*
 import scala.concurrent.duration.DurationInt
 
 object App {
-
   final case class Application(
       httpApp: HttpApp[IO],
       poller: ReplayPolling,
@@ -49,12 +50,8 @@ object App {
           calculator
         )
 
-      backfillService = BackfillServiceImpl(
-        replayClient,
-        replayIngestionService
-      )
-
-      pollingService = ReplayPollingImpl(replayClient, replayIngestionService)
+      backfillService = BackfillServiceImpl(replayIngestionService)
+      pollingService  = ReplayPollingImpl(replayIngestionService)
 
       // -- Setup READ services + routes (used by UI + API) --
       leaderboardQueries = DoobieLeaderboardQueries(xa)
@@ -74,6 +71,30 @@ object App {
       poller = pollingService,
       backfill = backfillService
     )
+
+  def runServer(
+      config: Config,
+      app: Application
+  ): IO[ExitCode] =
+    for {
+      _ <- IO.println("Starting poller...")
+      _ <- app.poller.start.guaranteeCase {
+        case Outcome.Succeeded(_) => IO.println("Poller finished")
+        case Outcome.Errored(e)   => IO.println(s"Poller failed: ${e.getMessage}")
+        case Outcome.Canceled()   => IO.println("Poller cancelled")
+      }.start
+
+      _ <- IO.println("Starting HTTP server...")
+      _ <-
+        EmberServerBuilder
+          .default[IO]
+          .withHost(ipv4"0.0.0.0")
+          .withPort(config.server.port)
+          .withHttpApp(app.httpApp)
+          .build
+          .useForever
+
+    } yield ExitCode.Success
 
   private def httpClient: Resource[IO, Client[IO]] =
     EmberClientBuilder

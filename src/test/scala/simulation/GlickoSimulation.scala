@@ -1,5 +1,3 @@
 package simulation
 
-class GlickoSimulation {
-
-}
+class GlickoSimulation {}

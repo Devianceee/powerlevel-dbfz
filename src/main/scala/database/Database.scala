@@ -3,9 +3,7 @@ package database
 import cats.effect.{IO, Resource}
 import com.zaxxer.hikari.HikariConfig
 import config.DatabaseConfig
-import doobie.ExecutionContexts
 import doobie.hikari.HikariTransactor
-import doobie.util.transactor.Transactor
 
 object Database {
   def resource(dbConfig: DatabaseConfig): Resource[IO, HikariTransactor[IO]] = {

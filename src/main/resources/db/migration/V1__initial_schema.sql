@@ -1,7 +1,6 @@
 CREATE TABLE player
 (
     id         BIGINT PRIMARY KEY,
-    steam_id   BIGINT,
     name       TEXT        NOT NULL,
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

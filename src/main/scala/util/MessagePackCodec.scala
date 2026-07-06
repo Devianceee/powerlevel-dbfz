@@ -1,9 +1,10 @@
 package util
 
-import client.model.{LoginRequest, ReplayRequest, LoginResponse, ReplayResponse, MatchRecord, ReplayPlayer}
-import domain.model.{AuthToken, PlayerId, ReplayId}
+import client.model.{LoginRequest, LoginResponse, MatchRecord, ReplayRequest, ReplayResponse}
+import domain.model.{AuthToken, Player, PlayerId, ReplayId}
 import wvlet.airframe.codec.MessageCodec
 import scodec.bits.ByteVector
+
 import java.time.{LocalDateTime, ZoneOffset}
 import java.time.format.DateTimeFormatter
 
@@ -103,11 +104,11 @@ object MessagePackCodec:
       val matchRecordsMap = rawMatches.map { matchData =>
         val winners = matchData._6
           .filter(_._1 != "0")
-          .map(p => ReplayPlayer(PlayerId(p._1.toLong), p._2, p._3))
+          .map(p => Player(PlayerId(p._1.toLong), p._2))
 
         val losers = matchData._7
           .filter(_._1 != "0")
-          .map(p => ReplayPlayer(PlayerId(p._1.toLong), p._2, p._3))
+          .map(p => Player(PlayerId(p._1.toLong), p._2))
 
         val record = MatchRecord(
           replayId = ReplayId(matchData._1),

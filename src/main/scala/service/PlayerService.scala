@@ -2,8 +2,6 @@ package service
 
 import query.PlayerQueries
 
-trait PlayerService {
-
-}
+trait PlayerService {}
 
 final class PlayerServiceImpl(playerQueries: PlayerQueries) extends PlayerService {}

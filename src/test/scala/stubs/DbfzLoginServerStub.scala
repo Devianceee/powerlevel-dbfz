@@ -1,5 +1,3 @@
 package stubs
 
-class DbfzLoginServerStub {
-
-}
+class DbfzLoginServerStub {}

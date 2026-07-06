@@ -1,22 +1,16 @@
 package client.model
 
-import domain.model.{PlayerId, ReplayId}
+import domain.model.{Player, ReplayId}
+
 import java.time.OffsetDateTime
 
 case class ReplayResponse(matches: Map[ReplayId, MatchRecord])
 
-case class ReplayPlayer(
-    playerId: PlayerId,
-    username: String,
-    steamId: String
-)
-
 case class MatchRecord(
     replayId: ReplayId,
     timestamp: OffsetDateTime,
-    winningPlayers: Seq[ReplayPlayer],
+    winningPlayers: Seq[Player],
     winningCharacters: Seq[Int],
-    losingPlayers: Seq[ReplayPlayer],
+    losingPlayers: Seq[Player],
     losingCharacters: Seq[Int]
 )
-

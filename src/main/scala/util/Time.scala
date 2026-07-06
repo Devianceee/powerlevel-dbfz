@@ -1,5 +1,3 @@
 package util
 
-class Time {
-
-}
+class Time {}

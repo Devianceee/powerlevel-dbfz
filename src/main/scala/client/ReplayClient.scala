@@ -2,7 +2,9 @@ package client
 
 import cats.effect.IO
 import client.model.{ReplayRequest, ReplayResponse}
+import config.DbfzConfig
 import domain.model.{AuthToken, PlayerId}
+import org.http4s.{Method, Request, Uri}
 import org.http4s.client.Client
 import util.MessagePackCodec
 
@@ -10,7 +12,7 @@ trait ReplayClient {
   def getReplays(request: ReplayRequest): IO[ReplayResponse]
 }
 
-final case class HttpReplayClient(client: Client[IO], authToken: AuthToken, playerId: PlayerId) extends ReplayClient {
+final case class HttpReplayClient(client: Client[IO], config: DbfzConfig, authToken: AuthToken, playerId: PlayerId) extends ReplayClient {
   override def getReplays(request: ReplayRequest): IO[ReplayResponse] = {
     val body = MessagePackCodec.replayEncoder(request, authToken, playerId)
     val req  = Request[IO](

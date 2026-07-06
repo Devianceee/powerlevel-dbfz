@@ -1,6 +1,6 @@
-import cats.MonoidK.ops.toAllMonoidKOps
 import cats.effect.kernel.Outcome
 import cats.effect.{ExitCode, IO, Resource}
+import cats.syntax.all.toSemigroupKOps
 import client.{HttpLoginClient, HttpReplayClient, LoginClient, ReplayClient}
 import config.{Config, DbfzConfig}
 import database.{Database, FlywayMigration}
@@ -112,16 +112,17 @@ object App {
 
   private def replayClient(
       client: Client[IO],
+      config: DbfzConfig,
       token: AuthToken,
       playerId: PlayerId
   ): ReplayClient =
-    HttpReplayClient(client, token, playerId)
+    HttpReplayClient(client, config, token, playerId)
 
   private def replayClientResource(config: Config): Resource[IO, ReplayClient] =
     for {
       client <- httpClient
       login = loginClient(client, config.dbfzConfig)
       loginResp <- Resource.eval(login.login)
-      replay = replayClient(client, loginResp.authToken, loginResp.playerId)
+      replay = replayClient(client, config.dbfzConfig, loginResp.authToken, loginResp.playerId)
     } yield replay
 }

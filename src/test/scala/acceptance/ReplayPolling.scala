@@ -1,5 +1,3 @@
 package acceptance
 
-class ReplayPolling {
-
-}
+class ReplayPolling {}

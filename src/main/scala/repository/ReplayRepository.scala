@@ -2,8 +2,10 @@ package repository
 
 import cats.data.NonEmptyList
 import cats.effect.IO
-import domain.model.{Replay, ReplayId, SteamId}
+import domain.model.{Replay, ReplayId}
 import doobie.Transactor
+
+import scala.annotation.unused
 
 trait ReplayRepository {
   def insert(replay: Replay): IO[Unit]
@@ -12,7 +14,7 @@ trait ReplayRepository {
   def latest(limit: Int): IO[List[Replay]]
 }
 
-final class DoobieReplayRepository(xa: Transactor[IO]) extends ReplayRepository {
+final class DoobieReplayRepository(@unused xa: Transactor[IO]) extends ReplayRepository {
   override def insert(replay: Replay): IO[Unit] = ???
 
   override def insertMany(replay: NonEmptyList[Replay]): IO[Unit] = ???

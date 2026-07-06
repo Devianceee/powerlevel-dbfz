@@ -1,5 +1,3 @@
 package stubs
 
-class DbfzReplayServerStub {
-
-}
+class DbfzReplayServerStub {}

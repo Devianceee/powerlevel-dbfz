@@ -1,5 +1,3 @@
 package support
 
-class TestApp {
-
-}
+class TestApp {}

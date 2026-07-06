@@ -4,9 +4,10 @@ import cats.effect.IO
 import org.http4s.HttpRoutes
 import service.{LeaderboardService, PlayerService}
 
-final class UiRoutes(leaderboardService: LeaderboardService, playerService: PlayerService) {
-  val routes: HttpRoutes[IO] = {
+import scala.annotation.unused
+
+final class UiRoutes(@unused leaderboardService: LeaderboardService, @unused playerService: PlayerService) {
+  val routes: HttpRoutes[IO] =
     // Define your API routes here, using the leaderboardService and playerService
     ???
-  }
 }

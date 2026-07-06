@@ -13,4 +13,4 @@ final class ReplayIngestionServiceImpl(
     ratingRepo: RatingRepository,
     ratingHistoryRepo: RatingHistoryRepository,
     ratingCalculator: GlickoCalculator
-) extends ReplayIngestionService {}
+) extends ReplayIngestionService

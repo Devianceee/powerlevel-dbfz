@@ -1,5 +1,3 @@
 package database
 
-class Transactor {
-
-}
+class Transactor {}

@@ -1,5 +1,3 @@
 package domain.model
 
-case class Replay() {
-
-}
+case class Replay() {}

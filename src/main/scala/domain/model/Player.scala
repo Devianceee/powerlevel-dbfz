@@ -1,5 +1,3 @@
 package domain.model
 
-case class Player() {
-
-}
+case class Player(playerId: PlayerId, username: String)

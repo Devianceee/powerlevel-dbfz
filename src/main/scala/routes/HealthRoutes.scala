@@ -7,12 +7,11 @@ import org.http4s.circe.CirceEntityEncoder._
 
 object HealthRoutes {
   val routes: HttpRoutes[IO] =
-    HttpRoutes.of[IO] {
-      case GET -> Root / "health" =>
-        Ok(
-          Map(
-            "status" -> "ok"
-          )
+    HttpRoutes.of[IO] { case GET -> Root / "health" =>
+      Ok(
+        Map(
+          "status" -> "ok"
         )
+      )
     }
 }

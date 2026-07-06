@@ -2,7 +2,7 @@ package query
 
 import cats.effect.IO
 import doobie.*
-import doobie.implicits.*
+//import doobie.implicits.*
 
 import java.time.Instant
 
@@ -15,7 +15,9 @@ trait PlayerQueries {
 }
 
 final class DoobiePlayerQueries(xa: Transactor[IO]) extends PlayerQueries {
-  ???
+  override def ratingGraph(playerId: PlayerId): IO[List[RatingPoint]]                      = ???
+  override def playerTimeline(playerId: PlayerId, limit: Int): IO[List[PlayerTimelineRow]] = ???
+  override def winRate(playerId: PlayerId): IO[WinRateRow]                                 = ???
 }
 
 final case class PlayerTimelineRow(

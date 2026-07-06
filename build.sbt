@@ -40,7 +40,8 @@ lazy val root = (project in file("."))
       "org.postgresql" % "postgresql"      % "42.7.8",
 
       // Migrations
-      "org.flywaydb" % "flyway-core" % FlywayVersion,
+      "org.flywaydb" % "flyway-core"                % FlywayVersion,
+      "org.flywaydb" % "flyway-database-postgresql" % FlywayVersion,
 
       // Configuration
       "is.cir" %% "ciris"        % CirisConfig,
@@ -55,25 +56,27 @@ lazy val root = (project in file("."))
       "ch.qos.logback" % "logback-classic" % "1.5.18",
 
       "org.wvlet.airframe" %% "airframe-msgpack" % "2026.2.2",
-      "org.wvlet.airframe" %% "airframe-codec" % "2026.2.2",
+      "org.wvlet.airframe" %% "airframe-codec"   % "2026.2.2",
 
       // Tests
       "org.scalameta" %% "munit"             % "1.2.1" % Test,
       "org.typelevel" %% "munit-cats-effect" % "2.1.0" % Test
     ),
+
+    assembly / mainClass       := Some("Main"),
+    assembly / assemblyJarName := "app.jar",
+
     scalacOptions ++= Seq(
       "-deprecation",
       "-feature",
       "-unchecked",
-      "-Wunused:all",
-      "-Xfatal-warnings",
-      "-Ywarn-unused:implicits",
-      "-Ywarn-unused:imports",
-      "-Ywarn-unused:locals",
-      "-Ywarn-unused:params",
-      "-Ywarn-unused:patvars",
-      "-Ywarn-unused:privates",
-      "-Ywarn-value-discard",
+//      "-Wunused:all",
+//      "-Xfatal-warnings",
       "-Wnonunit-statement"
     )
   )
+
+ThisBuild / assemblyMergeStrategy := {
+  case x if x.contains("module-info.class") => MergeStrategy.discard
+  case x                                    => MergeStrategy.defaultMergeStrategy(x)
+}

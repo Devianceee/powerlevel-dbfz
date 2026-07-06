@@ -12,5 +12,7 @@ object SteamId {
   }
 
   given ConfigDecoder[String, SteamId] =
-    ConfigDecoder[String, Long].map(SteamId.apply)
+    ConfigDecoder[String, String].mapOption("SteamId") { str =>
+      str.toLongOption.map(SteamId.apply)
+    }
 }

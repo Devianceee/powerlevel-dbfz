@@ -4,6 +4,7 @@ import cats.effect.{IO, Resource}
 import com.zaxxer.hikari.HikariConfig
 import config.DatabaseConfig
 import doobie.hikari.HikariTransactor
+import doobie.util.log.LogHandler
 
 object Database {
   def resource(dbConfig: DatabaseConfig): Resource[IO, HikariTransactor[IO]] = {

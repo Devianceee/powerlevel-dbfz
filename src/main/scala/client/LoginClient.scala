@@ -3,7 +3,7 @@ package client
 import cats.effect.IO
 import client.model.{LoginRequest, LoginResponse}
 import config.DbfzConfig
-import org.http4s.{Method, Request, Uri}
+import org.http4s.{Method, Request, Uri, UrlForm}
 import org.http4s.client.Client
 import util.MessagePackCodec
 
@@ -16,13 +16,13 @@ final case class HttpLoginClient(client: Client[IO], config: DbfzConfig) extends
     val body = MessagePackCodec.loginEncoder(LoginRequest(config.steamId))
     val req  = Request[IO](
       method = Method.POST,
-      uri = Uri.unsafeFromString(s"${config.baseUri}/api/user/login")
-    ).withEntity(body)
+      uri = Uri.unsafeFromString(s"${config.baseUri}/api/user/login"),
+    ).withEntity(UrlForm("data" -> body))
 
     for {
-      rawHexResponse <- client.expect[String](req)
+      rawResp <- client.expect[Array[Byte]](req)
       loginResponse  <- IO.fromEither(
-        MessagePackCodec.decodeLoginResponse(rawHexResponse).left.map(err => new RuntimeException(err))
+        MessagePackCodec.decodeLoginResponse(rawResp).left.map(err => new RuntimeException(err))
       )
     } yield loginResponse
   }

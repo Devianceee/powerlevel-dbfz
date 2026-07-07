@@ -1,18 +1,42 @@
 package repository
 
-import cats.effect.IO
 import domain.model.Rating
-import doobie.Transactor
-
-import scala.annotation.unused
+import domain.model.database.DbRatingHistoryInsert
+import doobie.ConnectionIO
+import doobie.implicits.*
 
 trait RatingHistoryRepository {
-  def insert(rating: Rating): IO[Unit]
-  def history(limit: Int): IO[List[Rating]]
+  def insert(ratingHistory: DbRatingHistoryInsert): ConnectionIO[Int]
 }
 
-final class DoobieRatingHistoryRepository(@unused xa: Transactor[IO]) extends RatingHistoryRepository {
-  override def insert(rating: Rating): IO[Unit] = ???
-
-  override def history(limit: Int): IO[List[Rating]] = ???
+final class DoobieRatingHistoryRepository extends RatingHistoryRepository {
+  override def insert(ratingHistory: DbRatingHistoryInsert): ConnectionIO[Int] =
+    sql"""
+          INSERT INTO rating_history (
+            replay_id,
+            player_id,
+    
+            rating_before,
+            rating_after,
+    
+            deviation_before,
+            deviation_after,
+    
+            volatility_before,
+            volatility_after
+          )
+          VALUES (
+            ${ratingHistory.replayId.value},
+            ${ratingHistory.playerId.value},
+    
+            ${ratingHistory.ratingBefore},
+            ${ratingHistory.ratingAfter},
+    
+            ${ratingHistory.deviationBefore},
+            ${ratingHistory.deviationAfter},
+    
+            ${ratingHistory.volatilityBefore},
+            ${ratingHistory.volatilityAfter}
+          )
+        """.update.run
 }

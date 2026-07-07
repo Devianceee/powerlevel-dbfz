@@ -57,6 +57,7 @@ lazy val root = (project in file("."))
 
       "org.wvlet.airframe" %% "airframe-msgpack" % "2026.2.2",
       "org.wvlet.airframe" %% "airframe-codec"   % "2026.2.2",
+      "org.scodec"         %% "scodec-core"      % "2.3.3",
 
       // Tests
       "org.scalameta" %% "munit"             % "1.2.1" % Test,

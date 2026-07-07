@@ -1,5 +1,11 @@
 package domain.model
 
+import doobie.Meta
+import io.circe.{Decoder, Encoder}
+import io.circe.generic.semiauto.deriveEncoder
+
+import scala.annotation.nowarn
+
 opaque type PlayerId = Long
 
 object PlayerId {
@@ -9,3 +15,5 @@ object PlayerId {
     def value: Long = id
   }
 }
+    
+

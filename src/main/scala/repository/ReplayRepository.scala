@@ -2,25 +2,65 @@ package repository
 
 import cats.data.NonEmptyList
 import cats.effect.IO
-import domain.model.{Replay, ReplayId}
-import doobie.Transactor
-
-import scala.annotation.unused
+import domain.model.database.DbReplayRow
+import domain.model.{MatchRecord, ReplayId}
+import doobie.implicits.*
+import doobie.postgres.implicits.*
+import doobie.{ConnectionIO, Transactor}
 
 trait ReplayRepository {
-  def insert(replay: Replay): IO[Unit]
-  def insertMany(replay: NonEmptyList[Replay]): IO[Unit]
-  def exists(replayId: ReplayId): IO[Boolean]
-  def latest(limit: Int): IO[List[Replay]]
+  def insert(replay: DbReplayRow): ConnectionIO[Int]
+  def exists(replayId: ReplayId): ConnectionIO[Boolean]
 }
 
-final class DoobieReplayRepository(@unused xa: Transactor[IO]) extends ReplayRepository {
-  override def insert(replay: Replay): IO[Unit] = ???
+final class DoobieReplayRepository extends ReplayRepository {
+  override def insert(replay: DbReplayRow): ConnectionIO[Int] =
+    sql"""
+    INSERT INTO replay (
+      id,
 
-  override def insertMany(replay: NonEmptyList[Replay]): IO[Unit] = ???
+      winner_id,
+      loser_id,
 
-  override def exists(replayId: ReplayId): IO[Boolean] = ???
+      winner_character_1,
+      winner_character_2,
+      winner_character_3,
 
-  override def latest(limit: Int): IO[List[Replay]] = ???
+      loser_character_1,
+      loser_character_2,
+      loser_character_3,
+
+      played_at
+    )
+    VALUES (
+      ${replay.id.value},
+
+      ${replay.winnerId.value},
+      ${replay.loserId.value},
+
+      ${replay.winnerCharacters.first},
+      ${replay.winnerCharacters.second},
+      ${replay.winnerCharacters.third},
+
+      ${replay.loserCharacters.first},
+      ${replay.loserCharacters.second},
+      ${replay.loserCharacters.third},
+
+      ${replay.playedAt}
+    )
+    ON CONFLICT (id)
+    DO NOTHING
+  """.update.run
+
+  override def exists(replayId: ReplayId): ConnectionIO[Boolean] =
+    sql"""
+          SELECT EXISTS(
+            SELECT 1
+            FROM replay
+            WHERE id = ${replayId.value}
+          )
+        """
+      .query[Boolean]
+      .unique
 
 }

@@ -22,9 +22,6 @@ CREATE TABLE replay
     loser_character_2  SMALLINT    NOT NULL,
     loser_character_3  SMALLINT    NOT NULL,
 
-    mode               SMALLINT    NOT NULL,
-    game_version       SMALLINT    NOT NULL,
-
     played_at          TIMESTAMPTZ NOT NULL,
     created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

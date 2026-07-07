@@ -13,13 +13,17 @@ import service.*
 import com.comcast.ip4s.*
 import domain.model.{AuthToken, PlayerId}
 import org.http4s.ember.server.EmberServerBuilder
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import query.*
-import rating.GlickoCalculator
+import rating.Glicko2Calculator
 import scheduler.*
 
 import scala.concurrent.duration.DurationInt
 
 object App {
+  given Logger[IO] = Slf4jLogger.getLogger[IO]
+  
   final case class Application(
       httpApp: HttpApp[IO],
       poller: ReplayPolling,
@@ -32,17 +36,18 @@ object App {
       _  <- Resource.eval(FlywayMigration.migrate(config.database))
       xa <- Database.resource(config.database)
 
-      playerRepository        = DoobiePlayerRepository(xa)
-      replayRepository        = DoobieReplayRepository(xa)
-      ratingRepository        = DoobieRatingRepository(xa)
-      ratingHistoryRepository = DoobieRatingHistoryRepository(xa)
+      playerRepository        = DoobiePlayerRepository()
+      replayRepository        = DoobieReplayRepository()
+      ratingRepository        = DoobieRatingRepository()
+      ratingHistoryRepository = DoobieRatingHistoryRepository()
 
-      calculator = GlickoCalculator()
+      calculator = Glicko2Calculator()
       replayClient <- replayClientResource(config)
 
       // -- Setup WRITE services + scheduler (isn't used by UI + API) --
-      replayIngestionService =
-        ReplayIngestionServiceImpl(
+      replayService =
+        RatingServiceImpl(
+          xa,
           replayClient,
           playerRepository,
           replayRepository,
@@ -51,8 +56,8 @@ object App {
           calculator
         )
 
-      backfillService = BackfillServiceImpl(replayIngestionService)
-      pollingService  = ReplayPollingImpl(replayIngestionService)
+      backfillService = BackfillServiceImpl(replayService)
+      pollingService  = ReplayPollingImpl(config.pollingConfig, replayService)
 
       // -- Setup READ services + routes (used by UI + API) --
       leaderboardQueries = DoobieLeaderboardQueries(xa)
@@ -61,11 +66,12 @@ object App {
       leaderboardService = LeaderboardServiceImpl(leaderboardQueries)
       playerService      = PlayerServiceImpl(playerQueries)
 
+      assetRoutes  = AssetRoutes.routes
       apiRoutes    = ApiRoutes(leaderboardService, playerService).routes
       uiRoutes     = UiRoutes(leaderboardService, playerService).routes
       healthRoutes = HealthRoutes.routes
 
-      httpApp = (healthRoutes <+> uiRoutes <+> apiRoutes).orNotFound
+      httpApp = (assetRoutes <+> healthRoutes <+> apiRoutes <+> uiRoutes).orNotFound
 
     } yield Application(
       httpApp = httpApp,

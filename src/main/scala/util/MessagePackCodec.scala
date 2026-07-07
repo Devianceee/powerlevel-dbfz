@@ -1,12 +1,15 @@
 package util
 
-import client.model.{LoginRequest, LoginResponse, MatchRecord, ReplayRequest, ReplayResponse}
-import domain.model.{AuthToken, Player, PlayerId, ReplayId}
+import client.model.{LoginRequest, LoginResponse, ReplayRequest, ReplayResponse}
+import domain.model.{AuthToken, GameVersion, MatchCharacters, MatchRecord, Player, PlayerId, ReplayId}
 import wvlet.airframe.codec.MessageCodec
 import scodec.bits.ByteVector
+import scodec.codecs.*
 
+import java.nio.ByteBuffer
 import java.time.{LocalDateTime, ZoneOffset}
 import java.time.format.DateTimeFormatter
+import scala.util.Try
 
 object MessagePackCodec:
 
@@ -43,12 +46,12 @@ object MessagePackCodec:
   private val timestampFormatter  = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
   def loginEncoder(loginRequest: LoginRequest): String = {
-    val steamIdHex = ByteVector.fromLong(loginRequest.steamId.value).toHex
-    val loginJson  = s"""[["", "", 2,"0.0.3", 103],["${loginRequest.steamId.value}", "$steamIdHex", 256, 0]]"""
+    val steamIdHex: String = loginRequest.steamId.value.toHexString
+    val loginJson          = s"""[["", "", 2,"0.0.3", 103],["${loginRequest.steamId.value}", "$steamIdHex", 256, 0]]"""
     stringToHex(loginJson)
   }
 
-  def replayEncoder(replayRequest: ReplayRequest, token: AuthToken, playerId: PlayerId): String = {
+  def replayEncoder(replayRequest: ReplayRequest, token: AuthToken, playerId: PlayerId, gameVersion: GameVersion): String = {
     val replayJson: String =
       s"""[
          |    [
@@ -61,10 +64,10 @@ object MessagePackCodec:
          |    [
          |        7,
          |        1,
-         |        1,
+         |        0,
          |        ${replayRequest.limit},
          |        [
-         |            28,
+         |            ${gameVersion.value},
          |            ${replayRequest.character},
          |            104,
          |            1,
@@ -84,39 +87,38 @@ object MessagePackCodec:
     ByteVector.view(bytes).toHex
   }
 
-  private def parseHexWithCodec[T](hexString: String, codec: MessageCodec[T]): Either[String, T] =
-    ByteVector.fromHex(hexString) match
-      case Some(byteVector) => Right(codec.fromMsgPack(byteVector.toArray))
-      case None             => Left(s"Server returned invalid hex: $hexString")
+  private def parseBytesWithCodec[T](bytes: Array[Byte], codec: MessageCodec[T]): Either[String, T] =
+    Try(codec.fromMsgPack(bytes)).toEither match {
+      case Right(value) => Right(value)
+      case Left(err)    => Left(err.getMessage)
+    }
 
-  def decodeLoginResponse(hexString: String): Either[String, LoginResponse] =
-    parseHexWithCodec(hexString, loginResponseCodec).map { parsedTuple =>
+  def decodeLoginResponse(bytes: Array[Byte]): Either[String, LoginResponse] =
+    parseBytesWithCodec(bytes, loginResponseCodec).map { parsedTuple =>
       LoginResponse(
         authToken = AuthToken(parsedTuple._1._1),
         playerId = PlayerId(parsedTuple._2._2._1.toLong)
       )
     }
 
-  def decodeReplayResponse(hexString: String): Either[String, ReplayResponse] =
-    parseHexWithCodec(hexString, replayResponseCodec).map { parsedTuple =>
-      val rawMatches = parsedTuple._2._3
+  def decodeReplayResponse(bytes: Array[Byte]): Either[String, ReplayResponse] =
+    parseBytesWithCodec(bytes, replayResponseCodec).map { parsedTuple =>
+      val rawMatches: Seq[MatchTuple] = parsedTuple._2._3
 
-      val matchRecordsMap = rawMatches.map { matchData =>
-        val winners = matchData._6
-          .filter(_._1 != "0")
-          .map(p => Player(PlayerId(p._1.toLong), p._2))
+      val matchRecordsMap: Map[ReplayId, MatchRecord] = rawMatches.map { matchData =>
+        val winner: Player = matchData._6.filter(_._1 != "0").map(p => Player(PlayerId(p._1.toLong), p._2)).head
+        val loser: Player  = matchData._7.filter(_._1 != "0").map(p => Player(PlayerId(p._1.toLong), p._2)).head
 
-        val losers = matchData._7
-          .filter(_._1 != "0")
-          .map(p => Player(PlayerId(p._1.toLong), p._2))
+        val winnerCharacters = MatchCharacters.insertCharacters(matchData._4)
+        val loserCharacters  = MatchCharacters.insertCharacters(matchData._5)
 
         val record = MatchRecord(
           replayId = ReplayId(matchData._1),
           timestamp = LocalDateTime.parse(matchData._9, timestampFormatter).atOffset(ZoneOffset.UTC),
-          winningPlayers = winners,
-          winningCharacters = matchData._4,
-          losingPlayers = losers,
-          losingCharacters = matchData._5
+          winningPlayer = winner,
+          winningCharacters = winnerCharacters,
+          losingPlayer = loser,
+          losingCharacters = loserCharacters
         )
 
         record.replayId -> record
@@ -125,5 +127,5 @@ object MessagePackCodec:
       ReplayResponse(matchRecordsMap)
     }
 
-  def safeDecodeGenericHex(hexString: String): Either[String, Seq[Seq[Any]]] =
-    parseHexWithCodec(hexString, genericCodec)
+  def safeDecodeGenericHex(bytes: Array[Byte]): Either[String, Seq[Seq[Any]]] =
+    parseBytesWithCodec(bytes, genericCodec)

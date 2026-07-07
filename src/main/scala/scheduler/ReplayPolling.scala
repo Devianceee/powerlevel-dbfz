@@ -1,8 +1,8 @@
 package scheduler
 
 import cats.effect.IO
-import client.ReplayClient
-import service.ReplayIngestionService
+import config.PollingConfig
+import service.RatingService
 
 import scala.concurrent.duration.DurationInt
 
@@ -10,11 +10,12 @@ trait ReplayPolling {
   def start: IO[Unit]
 }
 
-final class ReplayPollingImpl(ingestionService: ReplayIngestionService) extends ReplayPolling {
+final class ReplayPollingImpl(config: PollingConfig, ratingService: RatingService) extends ReplayPolling {
   override def start: IO[Unit] =
     (for {
-      _ <- IO.println("Polling latest replays...")
-//      _ <- replayIngestionService.ingestLatest(limit = 100)
-      _ <- IO.sleep(60.seconds)
+      _ <- IO.println("Polling and ingesting latest replays...")
+      _ <- ratingService.ingest(limit = 100)
+      _ <- IO.println(s"Finished, sleeping for ${config.pollingInterval.seconds} seconds.")
+      _ <- IO.sleep(config.pollingInterval.seconds)
     } yield ()).foreverM
 }

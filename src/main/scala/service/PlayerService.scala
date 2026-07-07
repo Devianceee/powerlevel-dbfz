@@ -1,7 +1,38 @@
 package service
 
+import cats.effect.IO
+import domain.model.PlayerId
 import query.PlayerQueries
+import ui.model.{PlayerPageResponse, PlayerSearchResponse}
 
-trait PlayerService {}
+trait PlayerService {
+  def search(name: String): IO[List[PlayerSearchResponse]]
+  def player(playerId: PlayerId): IO[PlayerPageResponse]
+}
 
-final class PlayerServiceImpl(playerQueries: PlayerQueries) extends PlayerService {}
+final class PlayerServiceImpl(playerQueries: PlayerQueries) extends PlayerService {
+  override def search(name: String): IO[List[PlayerSearchResponse]] =
+    for {
+      data <- playerQueries.findPlayers(name = name)
+      resp = data.map(p => PlayerSearchResponse(playerId = p.playerId, name = p.name, rating = p.rating))
+    } yield resp
+
+  override def player(playerId: PlayerId): IO[PlayerPageResponse] =
+    for {
+      profile  <- playerQueries.playerProfile(playerId)
+      timeline <- playerQueries.playerTimeline(playerId)
+      winrate <- playerQueries.winRate(playerId)
+      ratingGraph <- playerQueries.ratingGraph(playerId)
+    } yield PlayerPageResponse(
+      playerId = profile.playerId,
+      name = profile.name,
+      rating = profile.rating,
+      rd = profile.deviation,
+      volatility = profile.volatility,
+      wins = winrate.wins,
+      losses = winrate.losses,
+      winRate = winrate.winRate,
+      timeline = timeline,
+      ratingGraph = ratingGraph
+    )
+}

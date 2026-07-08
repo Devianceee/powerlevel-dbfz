@@ -45,7 +45,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Copy Compose and Provisioning Scripts to VPS via SCP
+      - name: Copy Compose and Provisioning Scripts to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -75,21 +75,35 @@ jobs:
           script: |
             LOW_IMAGE=$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')
 
-            # Move docker-compose.yml to permanent deployment location
+            echo "Deploying image: ghcr.io/$LOW_IMAGE:latest"
+
+            # Create deployment directory
             sudo mkdir -p /opt/powerlevel
+
+            # Copy compose file
             sudo mv /tmp/deploy/docker-compose.yml /opt/powerlevel/docker-compose.yml
 
-            # Run provisioning script
-            chmod +x /tmp/deploy/scripts/provision.sh
-            IMAGE_NAME=$LOW_IMAGE sudo -E /tmp/deploy/scripts/provision.sh
+            # Create environment file for docker compose
+            cat <<EOF | sudo tee /opt/powerlevel/.env
+            IMAGE_NAME=$LOW_IMAGE
+            DBFZ_STEAM_ID=$DBFZ_STEAM_ID
+            R2_ACCESS_KEY_ID=$R2_ACCESS_KEY_ID
+            R2_SECRET_KEY=$R2_SECRET_KEY
+            R2_ACCOUNT_ID=$R2_ACCOUNT_ID
+            EOF
 
-            # Authenticate Docker with GHCR
+            # Run provisioning
+            chmod +x /tmp/deploy/scripts/provision.sh
+            sudo /tmp/deploy/scripts/provision.sh
+
+            # Login to GHCR
             echo "$GH_TOKEN" | sudo docker login ghcr.io -u "$GH_ACTOR" --password-stdin
 
-            # Pull latest image and restart service
+            # Deploy containers
             cd /opt/powerlevel
+            sudo docker compose config
             sudo docker compose pull
-            sudo systemctl restart powerlevel.service
+            sudo docker compose up -d
 
             # Cleanup
             rm -rf /tmp/deploy

@@ -3,33 +3,31 @@ services:
     image: postgres:17
     container_name: powerlevel-postgres
     restart: unless-stopped
-
     environment:
       POSTGRES_DB: powerlevel
       POSTGRES_USER: powerlevel
       POSTGRES_PASSWORD: password
-
     ports:
-      - "5432:5432"
-
+      # Lock to localhost
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
   app:
-    build: .
+    # Pull the pre-built image from GHCR instead of building locally on the VPS
+    image: ghcr.io/${IMAGE_NAME}:latest
     container_name: powerlevel-app
     restart: unless-stopped
-
     ports:
-      - "8080:8080"
-
+      # Lock to localhost so public traffic is forced to go through Caddy SSL
+      - "127.0.0.1:8080:8080"
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: powerlevel
       DB_PASSWORD: password
       DB_NAME: powerlevel
-
+      DBFZ_STEAM_ID: ${DBFZ_STEAM_ID}
     depends_on:
       - postgres
 

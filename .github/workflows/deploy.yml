@@ -6,11 +6,11 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: devianceee/powerlevel-dbfz
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     permissions:
       contents: read
       packages: write
@@ -24,6 +24,9 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Lowercase image name
+        run: echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -48,12 +51,11 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          # Copy BOTH the compose blueprint and the initialization scripts
           source: "docker-compose.yml,scripts/provision.sh"
           target: "/tmp/deploy"
 
       - name: Execute Server Operations via SSH
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/ssh-action@v1
         env:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_KEY: ${{ secrets.R2_SECRET_KEY }}
@@ -62,29 +64,32 @@ jobs:
           DBFZ_STEAM_ID: ${{ vars.DBFZ_STEAM_ID }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_ACTOR: ${{ github.actor }}
+
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+
           envs: R2_ACCESS_KEY_ID,R2_SECRET_KEY,R2_ACCOUNT_ID,DBFZ_STEAM_ID,IMAGE_NAME,GH_TOKEN,GH_ACTOR
+
           script: |
             LOW_IMAGE=$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')
-            
-            # Move docker-compose.yml to its permanent deployment home
+
+            # Move docker-compose.yml to permanent deployment location
             sudo mkdir -p /opt/powerlevel
-            sudo mv /tmp/deploy/docker-compose-production.yml /opt/powerlevel/docker-compose.yml || sudo mv /tmp/deploy/docker-compose.yml /opt/powerlevel/docker-compose.yml
-            
-            # Execute provisioning script configurations
+            sudo mv /tmp/deploy/docker-compose.yml /opt/powerlevel/docker-compose.yml
+
+            # Run provisioning script
             chmod +x /tmp/deploy/scripts/provision.sh
             IMAGE_NAME=$LOW_IMAGE sudo -E /tmp/deploy/scripts/provision.sh
-            
-            # Authenticate host Docker to access your private GHCR image packages
+
+            # Authenticate Docker with GHCR
             echo "$GH_TOKEN" | sudo docker login ghcr.io -u "$GH_ACTOR" --password-stdin
-            
-            # Force pull fresh image assets and tell Systemd to trigger the compose layers
+
+            # Pull latest image and restart service
             cd /opt/powerlevel
             sudo docker compose pull
             sudo systemctl restart powerlevel.service
-            
-            # Cleanup temp artifacts
+
+            # Cleanup
             rm -rf /tmp/deploy

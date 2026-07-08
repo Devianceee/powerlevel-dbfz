@@ -1,0 +1,3 @@
+package stubs
+
+class DbfzReplayServerStub {}

@@ -1,0 +1,383 @@
+:root {
+  --bg: #0b0d12;
+  --panel: #121725;
+  --panel-2: #0f121a;
+
+  --border: rgba(255,255,255,0.06);
+  --border-strong: rgba(255,255,255,0.12);
+
+  --text: #eaeaea;
+  --muted: rgba(234,234,234,0.65);
+
+  --accent: #7c5cff;
+
+  /* Added semantic colors for match results */
+  --win: #10b981;
+  --loss: #ef4444;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+
+  /* STICKY FOOTER: Allows layout elements to stretch vertically */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ---------------- HEADER ---------------- */
+
+header {
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px;
+}
+
+.header-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-container h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.header-container nav ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------------- LAYOUT ---------------- */
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  flex: 1;
+
+  /* Prevent actual page content from getting hidden behind the floating footer */
+  padding: 32px 20px 100px 20px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ---------------- CARDS ---------------- */
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+}
+
+.card + .card {
+  margin-top: 20px;
+}
+
+.card h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* ---------------- PLAYER DASHBOARD ELEMENTS ---------------- */
+
+.player-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.player-header h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.player-header p {
+  margin: 4px 0 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.player-rating {
+  text-align: right;
+}
+
+.player-rating h1 {
+  margin: 0;
+  font-size: 2.5rem;
+  color: var(--accent);
+  line-height: 1;
+  font-weight: 800;
+}
+
+.player-rating p {
+  margin: 4px 0 0 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+/* Dynamic grid adjustments for performance stats */
+.player-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.stat {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.stat strong {
+  font-size: 1.35rem;
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* Win/Loss Status Badges */
+.win {
+  color: var(--win);
+  background: rgba(16, 185, 129, 0.12);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.815rem;
+  display: inline-block;
+}
+
+.loss {
+  color: var(--loss);
+  background: rgba(239, 68, 68, 0.12);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.815rem;
+  display: inline-block;
+}
+
+/* ---------------- HOMEPAGE LEADERBOARD ---------------- */
+
+.rank {
+  color: var(--muted);
+  width: 70px;
+}
+
+.num-header {
+  text-align: right;
+}
+
+.rating-cell {
+  text-align: right;
+  font-variant-numeric: tabular-nums; /* Keeps numbers perfectly vertically aligned */
+}
+
+.rating-main {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.rating-deviation {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.volatility-cell {
+  text-align: right;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------- TABLE ---------------- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 12px;
+  border-bottom: 1px solid var(--border-strong);
+  font-size: 0.875rem;
+}
+
+td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.925rem;
+}
+
+tr:hover {
+  background: rgba(124, 92, 255, 0.04);
+}
+
+/* ---------------- LINKS ---------------- */
+
+a {
+  color: var(--text);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+/* ---------------- SEARCH ---------------- */
+
+.player-search {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+input[type="search"] {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  outline: none;
+  font-size: 14px;
+}
+
+input[type="search"]:focus {
+  border-color: var(--accent);
+}
+
+/* dropdown */
+
+#search-results {
+  position: absolute;
+  width: 100%;
+  top: calc(100% + 8px);
+  left: 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  z-index: 50;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+#search-results table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#search-results td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+#search-results tr:hover {
+  background: rgba(124, 92, 255, 0.08);
+}
+
+.search-empty {
+  padding: 12px;
+  color: var(--muted);
+}
+
+/* ---------------- FOOTER ---------------- */
+
+footer {
+  background: var(--panel-2);
+  border-top: 1px solid var(--border);
+  padding: 24px 20px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  box-sizing: border-box;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.footer-content p {
+  margin: 0;
+}
+
+.footer-nav ul {
+  list-style: none;
+  display: flex;
+  gap: 24px;
+  margin: 0;
+  padding: 0;
+}
+
+.footer-nav a {
+  color: var(--muted);
+  transition: color 0.2s ease;
+}
+
+.footer-nav a:hover {
+  color: var(--accent);
+}
+
+/* ---------------- RESPONSIVE / MOBILE ---------------- */
+
+@media (max-width: 600px) {
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  .footer-nav ul {
+    justify-content: center;
+  }
+
+  /* Hides the volatility column entirely on mobile */
+  .volatility-cell,
+  .vol-header {
+    display: none;
+  }
+}

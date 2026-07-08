@@ -7,6 +7,6 @@ trait BackfillService {
   def run: IO[Unit]
 }
 
-final class BackfillServiceImpl(ingestionService: RatingService) extends BackfillService {
-  override def run: IO[Unit] = ???
+final class BackfillServiceImpl(ratingService: RatingService) extends BackfillService {
+  override def run: IO[Unit] = ratingService.ingest(5000)
 }

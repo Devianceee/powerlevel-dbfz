@@ -13,7 +13,6 @@ object DatabaseConfig {
     val password = env("DB_PASSWORD").default("password").secret
     val database = env("DB_NAME").default("powerlevel")
 
-    (host, port, user, password, database)
-      .mapN(DatabaseConfig.apply)
+    (host, port, user, password, database).mapN(DatabaseConfig.apply)
   }
 }

@@ -1,27 +1,29 @@
 package service
 
 import cats.effect.IO
-import domain.model.PlayerId
+import domain.model.{PlayerId, PlayerName}
+import doobie.Transactor
+import doobie.implicits.toConnectionIOOps
 import query.PlayerQueries
 import ui.model.{PlayerPageResponse, PlayerSearchResponse}
 
 trait PlayerService {
-  def search(name: String): IO[List[PlayerSearchResponse]]
+  def search(name: PlayerName): IO[List[PlayerSearchResponse]]
   def player(playerId: PlayerId): IO[PlayerPageResponse]
 }
 
-final class PlayerServiceImpl(playerQueries: PlayerQueries) extends PlayerService {
-  override def search(name: String): IO[List[PlayerSearchResponse]] =
-    for {
+final class PlayerServiceImpl(xa: Transactor[IO], playerQueries: PlayerQueries) extends PlayerService {
+  override def search(name: PlayerName): IO[List[PlayerSearchResponse]] =
+    (for {
       data <- playerQueries.findPlayers(name = name)
       resp = data.map(p => PlayerSearchResponse(playerId = p.playerId, name = p.name, rating = p.rating))
-    } yield resp
+    } yield resp).transact(xa)
 
   override def player(playerId: PlayerId): IO[PlayerPageResponse] =
-    for {
-      profile  <- playerQueries.playerProfile(playerId)
-      timeline <- playerQueries.playerTimeline(playerId)
-      winrate <- playerQueries.winRate(playerId)
+    (for {
+      profile     <- playerQueries.playerProfile(playerId)
+      timeline    <- playerQueries.playerTimeline(playerId)
+      winrate     <- playerQueries.winRate(playerId)
       ratingGraph <- playerQueries.ratingGraph(playerId)
     } yield PlayerPageResponse(
       playerId = profile.playerId,
@@ -34,5 +36,5 @@ final class PlayerServiceImpl(playerQueries: PlayerQueries) extends PlayerServic
       winRate = winrate.winRate,
       timeline = timeline,
       ratingGraph = ratingGraph
-    )
+    )).transact(xa)
 }

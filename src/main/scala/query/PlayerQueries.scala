@@ -1,28 +1,22 @@
 package query
 
-import cats.effect.IO
 import doobie.*
 import doobie.implicits.*
 import doobie.postgres.implicits.*
-
-import java.time.OffsetDateTime
 import domain.model.*
-import domain.model.Metas.playerIdMeta
+import domain.model.Metas.{playerIdMeta, playerNameMeta}
 import domain.model.database.{PlayerProfileRow, PlayerSearchRow, PlayerTimelineRow}
 
 trait PlayerQueries {
-  def findPlayers(name: String, limit: Int = 20): IO[List[PlayerSearchRow]]
-  def playerProfile(playerId: PlayerId): IO[PlayerProfileRow]
-  def playerTimeline(playerId: PlayerId, limit: Int = 100): IO[List[PlayerTimelineRow]]
-  def winRate(playerId: PlayerId): IO[WinRateRow]
-  def ratingGraph(playerId: PlayerId): IO[List[RatingPoint]]
+  def findPlayers(name: PlayerName, limit: Int = 20): ConnectionIO[List[PlayerSearchRow]]
+  def playerProfile(playerId: PlayerId): ConnectionIO[PlayerProfileRow]
+  def playerTimeline(playerId: PlayerId, limit: Int = 100): ConnectionIO[List[PlayerTimelineRow]]
+  def winRate(playerId: PlayerId): ConnectionIO[WinRateRow]
+  def ratingGraph(playerId: PlayerId): ConnectionIO[List[RatingPoint]]
 }
 
-final class DoobiePlayerQueries(xa: Transactor[IO]) extends PlayerQueries {
-  override def findPlayers(
-      name: String,
-      limit: Int = 20
-  ): IO[List[PlayerSearchRow]] =
+final class DoobiePlayerQueries extends PlayerQueries {
+  override def findPlayers(name: PlayerName, limit: Int = 20): ConnectionIO[List[PlayerSearchRow]] =
     sql"""
       SELECT
         p.id,
@@ -40,12 +34,9 @@ final class DoobiePlayerQueries(xa: Transactor[IO]) extends PlayerQueries {
         r.rating DESC NULLS LAST
   
       LIMIT $limit
-    """
-      .query[PlayerSearchRow]
-      .to[List]
-      .transact(xa)
+    """.query[PlayerSearchRow].to[List]
 
-  override def playerProfile(playerId: PlayerId): IO[PlayerProfileRow] =
+  override def playerProfile(playerId: PlayerId): ConnectionIO[PlayerProfileRow] =
     sql"""
          SELECT
            p.id,
@@ -83,7 +74,7 @@ final class DoobiePlayerQueries(xa: Transactor[IO]) extends PlayerQueries {
          LEFT JOIN replay
            ON replay.id = rh.replay_id
    
-         WHERE p.id = ${playerId.value}
+         WHERE p.id = ${playerId}
    
          GROUP BY
            p.id,
@@ -91,34 +82,28 @@ final class DoobiePlayerQueries(xa: Transactor[IO]) extends PlayerQueries {
            r.rating,
            r.deviation,
            r.volatility
-       """
-      .query[PlayerProfileRow]
-      .unique
-      .transact(xa)
+       """.query[PlayerProfileRow].unique
 
-  override def playerTimeline(
-      playerId: PlayerId,
-      limit: Int = 100
-  ): IO[List[PlayerTimelineRow]] =
+  override def playerTimeline(playerId: PlayerId, limit: Int = 100): ConnectionIO[List[PlayerTimelineRow]] =
     sql"""
        SELECT
          rh.replay_id,
          r.played_at,
  
          CASE
-           WHEN r.winner_id = ${playerId.value}
+           WHEN r.winner_id = ${playerId}
            THEN loser.name
            ELSE winner.name
          END AS opponent_name,
          
          CASE
-           WHEN r.winner_id = ${playerId.value}
+           WHEN r.winner_id = ${playerId}
            THEN loser.name
            ELSE winner.name
          END AS opponent_id,
  
          CASE
-           WHEN r.winner_id = ${playerId.value}
+           WHEN r.winner_id = ${playerId}
            THEN TRUE
            ELSE FALSE
          END AS is_win,
@@ -142,49 +127,32 @@ final class DoobiePlayerQueries(xa: Transactor[IO]) extends PlayerQueries {
        ORDER BY r.played_at DESC
  
        LIMIT $limit
-     """
-      .query[PlayerTimelineRow]
-      .to[List]
-      .transact(xa)
+     """.query[PlayerTimelineRow].to[List]
 
-  override def winRate(
-      playerId: PlayerId
-  ): IO[WinRateRow] =
+  override def winRate(playerId: PlayerId): ConnectionIO[WinRateRow] =
     sql"""
        SELECT
          COUNT(*) FILTER (
-           WHERE r.winner_id = ${playerId.value}
+           WHERE r.winner_id = ${playerId}
          ) AS wins,
  
          COUNT(*) FILTER (
-           WHERE r.loser_id = ${playerId.value}
+           WHERE r.loser_id = ${playerId}
          ) AS losses
  
        FROM replay r
  
        WHERE
-         r.winner_id = ${playerId.value}
+         r.winner_id = ${playerId}
          OR
-         r.loser_id = ${playerId.value}
-     """
-      .query[(Long, Long)]
-      .unique
-      .map { case (wins, losses) =>
-        val total = wins + losses
+         r.loser_id = ${playerId}
+     """.query[(Long, Long)].unique.map { case (wins, losses) =>
+      val total = wins + losses
 
-        WinRateRow(
-          wins = wins.toInt,
-          losses = losses.toInt,
-          winRate =
-            if (total == 0) 0.0
-            else wins.toDouble / total.toDouble
-        )
-      }
-      .transact(xa)
+      WinRateRow(wins = wins.toInt, losses = losses.toInt, winRate = if (total == 0) 0.0 else wins.toDouble / total.toDouble)
+    }
 
-  override def ratingGraph(
-      playerId: PlayerId
-  ): IO[List[RatingPoint]] =
+  override def ratingGraph(playerId: PlayerId): ConnectionIO[List[RatingPoint]] =
     sql"""
        SELECT
          replay_id,
@@ -193,11 +161,8 @@ final class DoobiePlayerQueries(xa: Transactor[IO]) extends PlayerQueries {
  
        FROM rating_history
  
-       WHERE player_id = ${playerId.value}
+       WHERE player_id = ${playerId}
  
        ORDER BY created_at ASC
-     """
-      .query[RatingPoint]
-      .to[List]
-      .transact(xa)
+     """.query[RatingPoint].to[List]
 }

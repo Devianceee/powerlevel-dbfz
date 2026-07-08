@@ -23,9 +23,7 @@ final class DoobieRatingRepository extends RatingRepository {
             volatility
           FROM rating
           WHERE player_id = ${playerId.value}
-        """
-      .query[DbRatingRow]
-      .option
+        """.query[DbRatingRow].option
 
   override def upsert(rating: DbRatingRow): ConnectionIO[Int] =
     sql"""

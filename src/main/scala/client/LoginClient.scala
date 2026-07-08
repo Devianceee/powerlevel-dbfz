@@ -14,16 +14,11 @@ trait LoginClient {
 final case class HttpLoginClient(client: Client[IO], config: DbfzConfig) extends LoginClient {
   override def login: IO[LoginResponse] = {
     val body = MessagePackCodec.loginEncoder(LoginRequest(config.steamId))
-    val req  = Request[IO](
-      method = Method.POST,
-      uri = Uri.unsafeFromString(s"${config.baseUri}/api/user/login"),
-    ).withEntity(UrlForm("data" -> body))
+    val req  = Request[IO](method = Method.POST, uri = Uri.unsafeFromString(s"${config.baseUri}/api/user/login")).withEntity(UrlForm("data" -> body))
 
     for {
-      rawResp <- client.expect[Array[Byte]](req)
-      loginResponse  <- IO.fromEither(
-        MessagePackCodec.decodeLoginResponse(rawResp).left.map(err => new RuntimeException(err))
-      )
+      rawResp       <- client.expect[Array[Byte]](req)
+      loginResponse <- IO.fromEither(MessagePackCodec.decodeLoginResponse(rawResp).left.map(err => new RuntimeException(err)))
     } yield loginResponse
   }
 }

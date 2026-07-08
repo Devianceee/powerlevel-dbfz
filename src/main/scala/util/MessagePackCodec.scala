@@ -1,7 +1,7 @@
 package util
 
 import client.model.{LoginRequest, LoginResponse, ReplayRequest, ReplayResponse}
-import domain.model.{AuthToken, GameVersion, MatchCharacters, MatchRecord, Player, PlayerId, ReplayId}
+import domain.model.{AuthToken, GameVersion, MatchCharacters, MatchRecord, Player, PlayerId, PlayerName, ReplayId}
 import wvlet.airframe.codec.MessageCodec
 import scodec.bits.ByteVector
 import scodec.codecs.*
@@ -22,23 +22,8 @@ object MessagePackCodec:
   private val loginResponseCodec = MessageCodec.of[LoginRawTuple]
 
   private type PlayerTuple = (String, String, String, String, Int)
-  private type MatchTuple  = (
-      Long,
-      Int,
-      String,
-      Seq[Int],
-      Seq[Int],
-      Seq[PlayerTuple],
-      Seq[PlayerTuple],
-      Int,
-      String,
-      Int,
-      Int,
-      Int,
-      String,
-      String,
-      String
-  )
+  private type MatchTuple =
+    (Long, Int, String, Seq[Int], Seq[Int], Seq[PlayerTuple], Seq[PlayerTuple], Int, String, Int, Int, Int, String, String, String)
   private type ReplayDataTuple = (Int, Int, Seq[MatchTuple])
   private type ReplayRawTuple  = (Seq[Any], ReplayDataTuple)
 
@@ -52,8 +37,7 @@ object MessagePackCodec:
   }
 
   def replayEncoder(replayRequest: ReplayRequest, token: AuthToken, playerId: PlayerId, gameVersion: GameVersion): String = {
-    val replayJson: String =
-      s"""[
+    val replayJson: String = s"""[
          |    [
          |        "${playerId.value}",
          |        "${token.value}",
@@ -95,10 +79,7 @@ object MessagePackCodec:
 
   def decodeLoginResponse(bytes: Array[Byte]): Either[String, LoginResponse] =
     parseBytesWithCodec(bytes, loginResponseCodec).map { parsedTuple =>
-      LoginResponse(
-        authToken = AuthToken(parsedTuple._1._1),
-        playerId = PlayerId(parsedTuple._2._2._1.toLong)
-      )
+      LoginResponse(authToken = AuthToken(parsedTuple._1._1), playerId = PlayerId(parsedTuple._2._2._1.toLong))
     }
 
   def decodeReplayResponse(bytes: Array[Byte]): Either[String, ReplayResponse] =
@@ -106,8 +87,10 @@ object MessagePackCodec:
       val rawMatches: Seq[MatchTuple] = parsedTuple._2._3
 
       val matchRecordsMap: Map[ReplayId, MatchRecord] = rawMatches.map { matchData =>
-        val winner: Player = matchData._6.filter(_._1 != "0").map(p => Player(PlayerId(p._1.toLong), p._2)).head
-        val loser: Player  = matchData._7.filter(_._1 != "0").map(p => Player(PlayerId(p._1.toLong), p._2)).head
+        val winner: Player =
+          matchData._6.filter(_._1 != "0").map(p => Player(PlayerId(p._1.toLong), PlayerName(p._2))).head // TODO - get rid of the head since it'll always be ONLY one winner
+        val loser: Player =
+          matchData._7.filter(_._1 != "0").map(p => Player(PlayerId(p._1.toLong), PlayerName(p._2))).head // TODO - get rid of the head since it'll always be ONLY one loser
 
         val winnerCharacters = MatchCharacters.insertCharacters(matchData._4)
         val loserCharacters  = MatchCharacters.insertCharacters(matchData._5)
@@ -127,5 +110,4 @@ object MessagePackCodec:
       ReplayResponse(matchRecordsMap)
     }
 
-  def safeDecodeGenericHex(bytes: Array[Byte]): Either[String, Seq[Seq[Any]]] =
-    parseBytesWithCodec(bytes, genericCodec)
+  def safeDecodeGenericHex(bytes: Array[Byte]): Either[String, Seq[Seq[Any]]] = parseBytesWithCodec(bytes, genericCodec)

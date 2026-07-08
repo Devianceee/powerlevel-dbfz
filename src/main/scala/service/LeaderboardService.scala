@@ -1,19 +1,19 @@
 package service
 
 import cats.effect.IO
-import domain.model.{Player, PlayerId, Rating}
+import doobie.implicits.toConnectionIOOps
+import doobie.util.transactor.Transactor
 import query.LeaderboardQueries
-import repository.PlayerRepository
 import ui.model.LeaderboardRowResponse
 
 trait LeaderboardService {
-  def getTop100Players: IO[List[LeaderboardRowResponse]]
+  def getLeaderboard: IO[List[LeaderboardRowResponse]]
 }
 
-final class LeaderboardServiceImpl(leaderboardQueries: LeaderboardQueries) extends LeaderboardService {
-  override def getTop100Players: IO[List[LeaderboardRowResponse]] =
-    for {
+final class LeaderboardServiceImpl(xa: Transactor[IO], leaderboardQueries: LeaderboardQueries) extends LeaderboardService {
+  override def getLeaderboard: IO[List[LeaderboardRowResponse]] =
+    (for {
       data <- leaderboardQueries.globalLeaderboard()
       resp = data.map(p => LeaderboardRowResponse(playerId = p.playerId, name = p.name, rating = p.rating, rd = p.rd, volatility = p.volatility))
-    } yield resp
+    } yield resp).transact(xa)
 }

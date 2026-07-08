@@ -1,9 +1,8 @@
 package repository
 
-import cats.effect.IO
 import domain.model.database.DbPlayerRow
-import domain.model.{Player, PlayerId}
-import doobie.{ConnectionIO, Transactor}
+import domain.model.{Player, PlayerId, PlayerName}
+import doobie.ConnectionIO
 import doobie.syntax.string.toSqlInterpolator
 
 trait PlayerRepository {
@@ -17,12 +16,7 @@ final class DoobiePlayerRepository extends PlayerRepository {
           SELECT id, name
           FROM player
           WHERE id = ${player.playerId.value}
-        """
-      .query[(Long, String)]
-      .option
-      .map(_.map { case (id, name) =>
-        Player(playerId = PlayerId(id), username = name)
-      })
+        """.query[(Long, String)].option.map(_.map { case (id, name) => Player(playerId = PlayerId(id), username = PlayerName(name)) })
 
   override def upsert(player: DbPlayerRow): ConnectionIO[Int] =
     sql"""
@@ -32,13 +26,11 @@ final class DoobiePlayerRepository extends PlayerRepository {
           )
           VALUES (
             ${player.playerId.value},
-            ${player.username}
+            ${player.username.value}
           )
           ON CONFLICT (id)
           DO UPDATE SET
             name = EXCLUDED.name,
             updated_at = NOW()
-        """
-      .update
-      .run
+        """.update.run
 }

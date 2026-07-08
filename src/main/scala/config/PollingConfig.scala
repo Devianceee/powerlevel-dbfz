@@ -6,8 +6,7 @@ case class PollingConfig(pollingInterval: Int)
 
 object PollingConfig {
   def read: ConfigValue[Effect, PollingConfig] = {
-    val pollingInterval: ConfigValue[Effect, Int] =
-      env("POLLING_INTERVAL").as[Int].default(60)
+    val pollingInterval: ConfigValue[Effect, Int] = env("POLLING_INTERVAL").as[Int].default(60)
 
     pollingInterval.map(PollingConfig(_))
   }

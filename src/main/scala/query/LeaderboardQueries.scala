@@ -1,19 +1,16 @@
 package query
 
-import cats.effect.IO
-import domain.model.Metas.playerIdMeta
-import domain.model.PlayerId
+import domain.model.Metas.{playerIdMeta, playerNameMeta}
+import domain.model.database.DbLeaderboardRow
 import doobie.*
 import doobie.implicits.*
 
-import java.time.Instant
-
 trait LeaderboardQueries {
-  def globalLeaderboard(limit: Int = 100): IO[List[LeaderboardRow]]
+  def globalLeaderboard(limit: Int = 100): ConnectionIO[List[DbLeaderboardRow]]
 }
 
-final class DoobieLeaderboardQueries(xa: Transactor[IO]) extends LeaderboardQueries {
-  override def globalLeaderboard(limit: Int = 100): IO[List[LeaderboardRow]] =
+final class DoobieLeaderboardQueries extends LeaderboardQueries {
+  override def globalLeaderboard(limit: Int = 100): ConnectionIO[List[DbLeaderboardRow]] =
     sql"""
       SELECT
         p.id,
@@ -47,16 +44,5 @@ final class DoobieLeaderboardQueries(xa: Transactor[IO]) extends LeaderboardQuer
       ORDER BY conservative_rating DESC
 
       LIMIT $limit
-    """
-      .query[LeaderboardRow]
-      .to[List]
-      .transact(xa)
+    """.query[DbLeaderboardRow].to[List]
 }
-
-final case class LeaderboardRow(
-    playerId: PlayerId,
-    name: String,
-    rating: Int,
-    rd: Double,
-    volatility: Double
-)

@@ -11,7 +11,7 @@ import repository.*
 import routes.*
 import service.*
 import com.comcast.ip4s.*
-import domain.model.{AuthToken, PlayerId}
+import domain.model.{AuthToken, PlayerId, PlayerName}
 import org.http4s.ember.server.EmberServerBuilder
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -23,12 +23,8 @@ import scala.concurrent.duration.DurationInt
 
 object App {
   given Logger[IO] = Slf4jLogger.getLogger[IO]
-  
-  final case class Application(
-      httpApp: HttpApp[IO],
-      poller: ReplayPolling,
-      backfill: BackfillService
-  )
+
+  final case class Application(httpApp: HttpApp[IO], poller: ReplayPolling, backfill: BackfillService)
 
   def resource(config: Config): Resource[IO, Application] =
     for {
@@ -45,26 +41,17 @@ object App {
       replayClient <- replayClientResource(config)
 
       // -- Setup WRITE services + scheduler (isn't used by UI + API) --
-      replayService =
-        RatingServiceImpl(
-          xa,
-          replayClient,
-          playerRepository,
-          replayRepository,
-          ratingRepository,
-          ratingHistoryRepository,
-          calculator
-        )
+      replayService = RatingServiceImpl(xa, replayClient, playerRepository, replayRepository, ratingRepository, ratingHistoryRepository, calculator)
 
       backfillService = BackfillServiceImpl(replayService)
       pollingService  = ReplayPollingImpl(config.pollingConfig, replayService)
 
       // -- Setup READ services + routes (used by UI + API) --
-      leaderboardQueries = DoobieLeaderboardQueries(xa)
-      playerQueries      = DoobiePlayerQueries(xa)
+      leaderboardQueries = DoobieLeaderboardQueries()
+      playerQueries      = DoobiePlayerQueries()
 
-      leaderboardService = LeaderboardServiceImpl(leaderboardQueries)
-      playerService      = PlayerServiceImpl(playerQueries)
+      leaderboardService = LeaderboardServiceImpl(xa, leaderboardQueries)
+      playerService      = PlayerServiceImpl(xa, playerQueries)
 
       assetRoutes  = AssetRoutes.routes
       apiRoutes    = ApiRoutes(leaderboardService, playerService).routes
@@ -73,16 +60,9 @@ object App {
 
       httpApp = (assetRoutes <+> healthRoutes <+> apiRoutes <+> uiRoutes).orNotFound
 
-    } yield Application(
-      httpApp = httpApp,
-      poller = pollingService,
-      backfill = backfillService
-    )
+    } yield Application(httpApp = httpApp, poller = pollingService, backfill = backfillService)
 
-  def runServer(
-      config: Config,
-      app: Application
-  ): IO[ExitCode] =
+  def runServer(config: Config, app: Application): IO[ExitCode] =
     for {
       _ <- IO.println("Starting poller...")
       _ <- app.poller.start.guaranteeCase {
@@ -92,37 +72,15 @@ object App {
       }.start
 
       _ <- IO.println("Starting HTTP server...")
-      _ <-
-        EmberServerBuilder
-          .default[IO]
-          .withHost(ipv4"0.0.0.0")
-          .withPort(config.server.port)
-          .withHttpApp(app.httpApp)
-          .build
-          .useForever
+      _ <- EmberServerBuilder.default[IO].withHost(ipv4"0.0.0.0").withPort(config.server.port).withHttpApp(app.httpApp).build.useForever
 
     } yield ExitCode.Success
 
-  private def httpClient: Resource[IO, Client[IO]] =
-    EmberClientBuilder
-      .default[IO]
-      .withTimeout(60.seconds)
-      .withIdleConnectionTime(60.seconds)
-      .build
+  private def httpClient: Resource[IO, Client[IO]] = EmberClientBuilder.default[IO].withTimeout(60.seconds).withIdleConnectionTime(60.seconds).build
 
-  private def loginClient(
-      client: Client[IO],
-      config: DbfzConfig
-  ): LoginClient =
-    HttpLoginClient(client, config)
+  private def loginClient(client: Client[IO], config: DbfzConfig): LoginClient = HttpLoginClient(client, config)
 
-  private def replayClient(
-      client: Client[IO],
-      config: DbfzConfig,
-      token: AuthToken,
-      playerId: PlayerId
-  ): ReplayClient =
-    HttpReplayClient(client, config, token, playerId)
+  private def replayClient(client: Client[IO], config: DbfzConfig, token: AuthToken, playerId: PlayerId): ReplayClient = HttpReplayClient(client, config, token, playerId)
 
   private def replayClientResource(config: Config): Resource[IO, ReplayClient] =
     for {

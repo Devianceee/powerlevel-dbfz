@@ -59,8 +59,6 @@ final class DoobieReplayRepository extends ReplayRepository {
             FROM replay
             WHERE id = ${replayId.value}
           )
-        """
-      .query[Boolean]
-      .unique
+        """.query[Boolean].unique
 
 }

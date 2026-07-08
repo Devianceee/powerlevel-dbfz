@@ -11,18 +11,20 @@ object PlayerSearch {
   def view =
     div(cls := "player-search")(
       input(
-        id           := "search-field",
-        tpe          := "search",
-        name         := "q",
-        placeholder  := "Search players",
-        autocomplete := "off",
-
-        attr("hx-get")     := "/player/search",
-        attr("hx-trigger") := "input changed delay:400ms, keyup[key=='Enter']",
+        id             := "search-field",
+        tpe            := "search",
+        name           := "q",
+        placeholder    := "Search players",
+        autocomplete   := "off",
+        attr("hx-get") := "/player/search",
+        // Added focus condition: Re-fetches results if they click back in, but ONLY if they've typed text
+        attr("hx-trigger") := "input changed delay:400ms, keyup[key=='Enter'], focus[this.value.trim()!='']",
         attr("hx-target")  := "#search-results",
-        attr("hx-swap")    := "innerHTML"
-      ),
+        attr("hx-swap")    := "innerHTML",
 
+        attr("onkeydown") := "if(event.key === 'Escape') { document.getElementById('search-results').innerHTML = ''; this.blur(); }",
+        attr("onblur") := "setTimeout(() => { const res = document.getElementById('search-results'); if(res) res.innerHTML = ''; }, 200);"
+      ),
       div(id := "search-results")
     )
 
@@ -31,31 +33,11 @@ object PlayerSearch {
   // -------------------------
   def results(players: List[PlayerSearchResponse]) =
     div(cls := "search-results-card")(
-      if (players.isEmpty)
-        div(cls := "search-empty")("No players found")
-      else
-        table(cls := "search-table")(
-          tbody(
-            players.map(row)*
-          )
-        )
+      if (players.isEmpty) div(cls := "search-empty")("No players found") else table(cls := "search-table")(tbody(players.map(row)*))
     )
 
   // -------------------------
   // Row rendering
   // -------------------------
-  def row(p: PlayerSearchResponse) =
-    tr(
-      td(
-        a(
-          href := s"/player/${p.playerId}"
-        )(
-          p.name
-        )
-      ),
-
-      td(cls := "rating")(
-        f"${p.rating}"
-      )
-    )
+  def row(p: PlayerSearchResponse) = tr(td(a(href := s"/player/${p.playerId}")(p.name.value)), td(cls := "rating")(f"${p.rating}"))
 }

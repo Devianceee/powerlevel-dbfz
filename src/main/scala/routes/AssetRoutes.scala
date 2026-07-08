@@ -6,8 +6,5 @@ import org.http4s.server.staticcontent._
 
 object AssetRoutes {
 
-  val routes: HttpRoutes[IO] =
-    ResourceServiceBuilder[IO]("/assets")
-      .withPathPrefix("/assets")
-      .toRoutes
+  val routes: HttpRoutes[IO] = ResourceServiceBuilder[IO]("/assets").withPathPrefix("/assets").toRoutes
 }

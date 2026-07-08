@@ -12,6 +12,8 @@ import service.{LeaderboardService, PlayerService}
 
 final class ApiRoutes(leaderboardService: LeaderboardService, playerService: PlayerService) {
   val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+    case GET -> Root / "api" =>
+      Ok("To be completed later")
 
     case GET -> Root / "api" / "v1" / "leaderboard" =>
       for {

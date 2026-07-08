@@ -21,9 +21,8 @@ object PlayerSearch {
         attr("hx-trigger") := "input changed delay:400ms, keyup[key=='Enter'], focus[this.value.trim()!='']",
         attr("hx-target")  := "#search-results",
         attr("hx-swap")    := "innerHTML",
-
-        attr("onkeydown") := "if(event.key === 'Escape') { document.getElementById('search-results').innerHTML = ''; this.blur(); }",
-        attr("onblur") := "setTimeout(() => { const res = document.getElementById('search-results'); if(res) res.innerHTML = ''; }, 200);"
+        attr("onkeydown")  := "if(event.key === 'Escape') { document.getElementById('search-results').innerHTML = ''; this.blur(); }",
+        attr("onblur")     := "setTimeout(() => { const res = document.getElementById('search-results'); if(res) res.innerHTML = ''; }, 200);"
       ),
       div(id := "search-results")
     )

@@ -1,9 +1,11 @@
 package service
 
 import cats.effect.IO
-import domain.model.{PlayerId, PlayerName}
+import domain.model.database.PlayerTimelineRow
+import domain.model.{PlayerId, PlayerName, RatingPoint, ReplayId}
 import doobie.Transactor
 import doobie.implicits.toConnectionIOOps
+import org.typelevel.log4cats.Logger
 import query.PlayerQueries
 import ui.model.{PlayerPageResponse, PlayerSearchResponse}
 
@@ -12,7 +14,7 @@ trait PlayerService {
   def player(playerId: PlayerId): IO[PlayerPageResponse]
 }
 
-final class PlayerServiceImpl(xa: Transactor[IO], playerQueries: PlayerQueries) extends PlayerService {
+final class PlayerServiceImpl(xa: Transactor[IO], playerQueries: PlayerQueries)(using logger: Logger[IO]) extends PlayerService {
   override def search(name: PlayerName): IO[List[PlayerSearchResponse]] =
     (for {
       data <- playerQueries.findPlayers(name = name)

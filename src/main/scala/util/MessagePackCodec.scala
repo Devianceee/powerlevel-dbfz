@@ -86,26 +86,28 @@ object MessagePackCodec:
     parseBytesWithCodec(bytes, replayResponseCodec).map { parsedTuple =>
       val rawMatches: Seq[MatchTuple] = parsedTuple._2._3
 
-      val matchRecordsMap: Map[ReplayId, MatchRecord] = rawMatches.map { matchData =>
-        val winner: Player =
-          matchData._6.filter(_._1 != "0").map(p => Player(PlayerId(p._1.toLong), PlayerName(p._2))).head // TODO - get rid of the head since it'll always be ONLY one winner
-        val loser: Player =
-          matchData._7.filter(_._1 != "0").map(p => Player(PlayerId(p._1.toLong), PlayerName(p._2))).head // TODO - get rid of the head since it'll always be ONLY one loser
+      val matchRecordsMap: Map[ReplayId, MatchRecord] =
+        rawMatches.flatMap { matchData =>
+          val maybeRecord = for {
+            winnerTuple <- matchData._6.find(_._1 != "0")
+            loserTuple  <- matchData._7.find(_._1 != "0")
+          } yield {
+            val winner = Player(PlayerId(winnerTuple._1.toLong), PlayerName(winnerTuple._2))
+            val loser  = Player(PlayerId(loserTuple._1.toLong), PlayerName(loserTuple._2))
 
-        val winnerCharacters = MatchCharacters.insertCharacters(matchData._4)
-        val loserCharacters  = MatchCharacters.insertCharacters(matchData._5)
+            val record = MatchRecord(
+              replayId = ReplayId(matchData._1),
+              timestamp = LocalDateTime.parse(matchData._9, timestampFormatter).atOffset(ZoneOffset.UTC),
+              winningPlayer = winner,
+              winningCharacters = MatchCharacters.insertCharacters(matchData._4),
+              losingPlayer = loser,
+              losingCharacters = MatchCharacters.insertCharacters(matchData._5)
+            )
+            record.replayId -> record
+          }
 
-        val record = MatchRecord(
-          replayId = ReplayId(matchData._1),
-          timestamp = LocalDateTime.parse(matchData._9, timestampFormatter).atOffset(ZoneOffset.UTC),
-          winningPlayer = winner,
-          winningCharacters = winnerCharacters,
-          losingPlayer = loser,
-          losingCharacters = loserCharacters
-        )
-
-        record.replayId -> record
-      }.toMap
+          maybeRecord
+        }.toMap
 
       ReplayResponse(matchRecordsMap)
     }

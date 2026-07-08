@@ -34,9 +34,9 @@ object Layout {
             p(s"© ${java.time.Year.now().getValue} PowerLevel. All rights reserved."),
             tags2.nav(cls := "footer-nav")(
               ul(
-                li(a(href := "https://github.com/Devianceee/powerlevel-dbfz", target := "_blank", rel := "noopener noreferrer")("GitHub"))
-//                li(a(href := "/privacy")("Privacy Policy")),
-//                li(a(href := "/terms")("Terms of Service"))
+                li(a(href := "https://github.com/Devianceee/powerlevel-dbfz", target := "_blank", rel := "noopener noreferrer")("GitHub")),
+                li(a(href := "https://x.com/Deviance___", target := "_blank", rel := "noopener noreferrer")("Twitter (X)")),
+                li(a(href := "/about")("About"))
               )
             )
           )

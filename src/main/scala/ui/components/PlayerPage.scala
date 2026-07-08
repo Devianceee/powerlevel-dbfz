@@ -11,23 +11,26 @@ object PlayerPage {
       div(cls := "card")(
         div(cls := "player-header")(
           div(h2(player.name.value), p(s"Player ID: ${player.playerId.value}")),
-          div(cls := "player-rating")(h1(player.rating.toString), p("Rating"))
+          div(cls := "player-rating")(h1(player.rating.map(r => f"$r%.2f"), p("Rating")))
         ),
         div(cls := "player-stats")(
-          stat("Wins", player.wins.toString),
-          stat("Losses", player.losses.toString),
-          stat("Win Rate", f"${player.winRate}%.1f%%"),
-          stat("RD", player.rd.map(rd => f"$rd%.1f").getOrElse("-")),
-          stat("Volatility", player.volatility.map(v => f"$v%.4f").getOrElse("-"))
+          stat("Wins", Some(player.wins.toString)),
+          stat("Losses", Some(player.losses.toString)),
+          stat("Win Rate", Some(f"${player.winRate}%.1f%%")),
+          stat("Deviation", player.rd.map(rd => f"$rd%.1f")),
+          stat("Volatility", player.volatility.map(v => f"$v%.4f"))
         )
       ),
       div(cls := "card")(
         h2("Match History"),
-        table(cls := "leaderboard-table")(thead(tr(th("Date"), th("Opponent"), th("Result"), th("Rating"))), tbody(player.timeline.map(matchRow)*))
+        table(cls := "leaderboard-table")(
+          thead(tr(th("Date"), th("Opponent"), th("Result"), th("Rating"))),
+          tbody(player.timeline.map(matchRow)*)
+        )
       )
     )
 
-  private def stat(label: String, value: String) = div(cls := "stat")(span(cls := "stat-label")(label), strong(value))
+  private def stat(label: String, value: Option[String]) = div(cls := "stat")(span(cls := "stat-label")(label), strong(value))
 
   private def matchRow(row: PlayerTimelineRow) =
     tr(

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{50} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Keep application logs at INFO by default -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+    <!-- HikariCP: keep warnings/errors, hide normal pool chatter -->
+    <logger name="com.zaxxer.hikari" level="WARN"/>
+
+    <!-- Doobie: keep useful info, remove SQL debug noise -->
+    <logger name="doobie" level="INFO"/>
+
+    <!-- Doobie SQL execution logs (if enabled) -->
+    <logger name="doobie.util.log" level="INFO"/>
+
+    <!-- JDBC drivers -->
+    <logger name="org.postgresql" level="WARN"/>
+    <logger name="com.mysql.cj" level="WARN"/>
+
+    <!-- Cats Effect / FS2 can be noisy depending on versions -->
+    <logger name="cats.effect" level="WARN"/>
+    <logger name="fs2" level="WARN"/>
+
+    <!-- Netty / HTTP clients (if using http4s, sttp, etc.) -->
+    <logger name="io.netty" level="WARN"/>
+
+</configuration>

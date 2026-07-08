@@ -10,6 +10,10 @@
   --muted: rgba(234,234,234,0.65);
 
   --accent: #7c5cff;
+
+  /* Added semantic colors for match results */
+  --win: #10b981;
+  --loss: #ef4444;
 }
 
 body {
@@ -58,12 +62,12 @@ header {
 main {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 32px 20px;
   width: 100%;
   box-sizing: border-box;
-
-  /* STICKY FOOTER: Pushes the footer down if content is short */
   flex: 1;
+
+  /* Prevent actual page content from getting hidden behind the floating footer */
+  padding: 32px 20px 100px 20px;
 }
 
 .container {
@@ -77,11 +81,148 @@ main {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 18px;
+  padding: 24px;
 }
 
 .card + .card {
-  margin-top: 16px;
+  margin-top: 20px;
+}
+
+.card h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* ---------------- PLAYER DASHBOARD ELEMENTS ---------------- */
+
+.player-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.player-header h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.player-header p {
+  margin: 4px 0 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.player-rating {
+  text-align: right;
+}
+
+.player-rating h1 {
+  margin: 0;
+  font-size: 2.5rem;
+  color: var(--accent);
+  line-height: 1;
+  font-weight: 800;
+}
+
+.player-rating p {
+  margin: 4px 0 0 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+/* Dynamic grid adjustments for performance stats */
+.player-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.stat {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.stat strong {
+  font-size: 1.35rem;
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* Win/Loss Status Badges */
+.win {
+  color: var(--win);
+  background: rgba(16, 185, 129, 0.12);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.815rem;
+  display: inline-block;
+}
+
+.loss {
+  color: var(--loss);
+  background: rgba(239, 68, 68, 0.12);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.815rem;
+  display: inline-block;
+}
+
+/* ---------------- HOMEPAGE LEADERBOARD ---------------- */
+
+.rank {
+  color: var(--muted);
+  width: 70px;
+}
+
+.num-header {
+  text-align: right;
+}
+
+.rating-cell {
+  text-align: right;
+  font-variant-numeric: tabular-nums; /* Keeps numbers perfectly vertically aligned */
+}
+
+.rating-main {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.rating-deviation {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.volatility-cell {
+  text-align: right;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---------------- TABLE ---------------- */
@@ -97,15 +238,17 @@ th {
   color: var(--muted);
   padding: 12px;
   border-bottom: 1px solid var(--border-strong);
+  font-size: 0.875rem;
 }
 
 td {
-  padding: 12px;
+  padding: 14px 12px;
   border-bottom: 1px solid var(--border);
+  font-size: 0.925rem;
 }
 
 tr:hover {
-  background: rgba(124, 92, 255, 0.06);
+  background: rgba(124, 92, 255, 0.04);
 }
 
 /* ---------------- LINKS ---------------- */
@@ -113,6 +256,7 @@ tr:hover {
 a {
   color: var(--text);
   text-decoration: none;
+  transition: color 0.15s ease;
 }
 
 a:hover {
@@ -148,14 +292,11 @@ input[type="search"]:focus {
   width: 100%;
   top: calc(100% + 8px);
   left: 0;
-
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 12px;
-
   z-index: 50;
   overflow: hidden;
-
   box-shadow: 0 10px 30px rgba(0,0,0,0.4);
 }
 
@@ -173,7 +314,6 @@ input[type="search"]:focus {
   background: rgba(124, 92, 255, 0.08);
 }
 
-/* empty state */
 .search-empty {
   padding: 12px;
   color: var(--muted);
@@ -185,6 +325,12 @@ footer {
   background: var(--panel-2);
   border-top: 1px solid var(--border);
   padding: 24px 20px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  box-sizing: border-box;
 }
 
 .footer-content {
@@ -218,7 +364,8 @@ footer {
   color: var(--accent);
 }
 
-/* Responsive adjustment for small screens */
+/* ---------------- RESPONSIVE / MOBILE ---------------- */
+
 @media (max-width: 600px) {
   .footer-content {
     flex-direction: column;
@@ -227,16 +374,10 @@ footer {
   .footer-nav ul {
     justify-content: center;
   }
-}
 
-/* ---------------- SMALL UX TOUCHES ---------------- */
-
-.rank {
-  color: var(--muted);
-  width: 70px;
-}
-
-.rating {
-  font-weight: 600;
-  color: var(--accent);
+  /* Hides the volatility column entirely on mobile */
+  .volatility-cell,
+  .vol-header {
+    display: none;
+  }
 }

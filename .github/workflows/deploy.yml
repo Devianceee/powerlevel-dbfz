@@ -43,7 +43,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Copy Compose and Provisioning Scripts to VPS via SCP
-        uses: appleboy/scp-action@v1.0.3
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -53,7 +53,7 @@ jobs:
           target: "/tmp/deploy"
 
       - name: Execute Server Operations via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/scp-action@v0.1.7
         env:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_KEY: ${{ secrets.R2_SECRET_KEY }}

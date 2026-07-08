@@ -1,0 +1,87 @@
+name: Docker Production Deployment
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (For cross-compiling target architectures)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          # IMPORTANT ARCHITECTURE SELECTION:
+          # Change to linux/amd64 if using Hetzner Intel/AMD (CX23)
+          # Change to linux/arm64 if using Hetzner Ampere ARM (CAX11)
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Copy Provisioning Script to VPS
+        uses: appleboy/scp-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "scripts/provision.sh"
+          target: "/tmp/deploy"
+
+      - name: Execute Server Operations via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          R2_ACCESS_KEY: ${{ secrets.R2_ACCESS_KEY }}
+          R2_SECRET_KEY: ${{ secrets.R2_SECRET_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_ACTOR: ${{ github.actor }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: R2_ACCESS_KEY,R2_SECRET_KEY,R2_ACCOUNT_ID,IMAGE_NAME,GH_TOKEN,GH_ACTOR
+          script: |
+            # 1. Force lowercase string structure required by GHCR images
+            LOW_IMAGE=$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')
+            
+            # 2. Make the provisioning script executable and run it
+            chmod +x /tmp/deploy/scripts/provision.sh
+            IMAGE_NAME=$LOW_IMAGE sudo -E /tmp/deploy/scripts/provision.sh
+            
+            # 3. Authenticate host Docker daemon to pull your private GHCR registry
+            echo "$GH_TOKEN" | sudo docker login ghcr.io -u "$GH_ACTOR" --password-stdin
+            
+            # 4. Pull down the updated image and restart the Systemd service
+            sudo docker pull ghcr.io/$LOW_IMAGE:latest
+            sudo systemctl restart leaderboard.service
+            
+            # 5. Clean up temporary directory
+            rm -rf /tmp/deploy

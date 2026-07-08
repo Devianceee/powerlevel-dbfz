@@ -14,45 +14,58 @@ if [ ! -f /swapfile ]; then
     echo 'vm.swappiness=10' | sudo tee -a /etc/sysctl.conf
 fi
 
-# 2. INSTALL HOST DEPENDENCIES & CADDY
+# 2. INSTALL HOST DEPENDENCIES
 sudo apt update
-
 sudo apt install -y \
     docker.io \
     docker-compose-v2 \
     rclone \
     gzip \
+    curl \
+    gnupg \
     debian-keyring \
     debian-archive-keyring \
     apt-transport-https \
-    curl \
-    gnupg \
     ufw
 
-if [ ! -f /etc/apt/sources.list.d/caddy-stable.list ]; then
-    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.gpg' \
-        | sudo gpg --dearmor \
+
+# 3. INSTALL CADDY
+if ! command -v caddy >/dev/null 2>&1; then
+
+    echo "Installing Caddy..."
+
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
+        | sudo gpg --dearmor --batch --yes \
         -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
 
-    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.list' \
+
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
         | sudo tee /etc/apt/sources.list.d/caddy-stable.list
 
+
     sudo apt update
+
+    sudo apt install -y caddy
+
 fi
 
-sudo apt install -y caddy
+echo "Caddy version:"
+caddy version
 
-# Enable Docker
+# 4. ENABLE SERVICES
 sudo systemctl enable --now docker
+sudo systemctl enable --now caddy
 
-# Configure firewall
+
+# 5. FIREWALL
 sudo ufw allow OpenSSH
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 sudo ufw --force enable
 
 
-# 3. CONFIGURE CADDY REVERSE PROXY
+# 6. CONFIGURE CADDY
+echo "Configuring Caddy..."
 cat <<EOF | sudo tee /etc/caddy/Caddyfile
 powerlevel.info, www.powerlevel.info {
     reverse_proxy localhost:8080
@@ -60,10 +73,11 @@ powerlevel.info, www.powerlevel.info {
 EOF
 
 sudo caddy validate --config /etc/caddy/Caddyfile
-sudo systemctl enable caddy
+
 sudo systemctl restart caddy
 
-# 4. CONFIGURE RCLONE CREDENTIALS FOR CLOUDFLARE R2
+
+# 7. CONFIGURE RCLONE R2
 sudo mkdir -p /etc/rclone
 
 cat <<EOF | sudo tee /etc/rclone.conf
@@ -79,7 +93,8 @@ EOF
 
 sudo chmod 600 /etc/rclone.conf
 
-# 5. WRITE SYSTEM ENVIRONMENT VARIABLES FOR DOCKER COMPOSE
+
+# 8. WRITE DOCKER COMPOSE ENV
 sudo mkdir -p /opt/powerlevel
 
 cat <<EOF | sudo tee /opt/powerlevel/.env
@@ -90,8 +105,7 @@ EOF
 sudo chmod 600 /opt/powerlevel/.env
 
 
-# 6. GENERATE DATABASE BACKUP SCRIPT
-
+# 9. DATABASE BACKUP SCRIPT
 sudo mkdir -p /opt/powerlevel/backups
 cat <<'EOF' | sudo tee /usr/local/bin/db_backup.sh
 #!/bin/bash
@@ -103,7 +117,9 @@ docker exec -t powerlevel-postgres \
     pg_dump -U powerlevel powerlevel \
     | gzip > "$FILENAME"
 
-rclone --config /etc/rclone.conf \
+
+rclone \
+    --config /etc/rclone.conf \
     copy "$FILENAME" "r2:powerlevel-db-backups/"
 
 find "$BACKUP_DIR" \
@@ -115,8 +131,9 @@ EOF
 
 sudo chmod +x /usr/local/bin/db_backup.sh
 
-# Setup cron backup
+
 if ! sudo crontab -l 2>/dev/null | grep -q "db_backup.sh"; then
+
     (
         sudo crontab -l 2>/dev/null
         echo "0 3 * * * /usr/local/bin/db_backup.sh"
@@ -124,8 +141,7 @@ if ! sudo crontab -l 2>/dev/null | grep -q "db_backup.sh"; then
 fi
 
 
-# 7. GENERATE SYSTEMD SERVICE WRAPPER
-
+# 10. SYSTEMD DOCKER COMPOSE SERVICE
 cat <<EOF | sudo tee /etc/systemd/system/powerlevel.service
 [Unit]
 Description=Powerlevel Docker Compose Application

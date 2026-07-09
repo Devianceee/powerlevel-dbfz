@@ -12,11 +12,9 @@ object UpdatesList {
   private def update(u: SiteUpdate) =
     div(cls := "card")(
       h2(u.title),
-
       p(cls := "update-date")(
         s"${u.date} (${u.`type`})"
       ),
-
       ul(
         u.changes.map(li(_))*
       )

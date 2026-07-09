@@ -21,7 +21,7 @@ object LatestReplays {
       ),
       div(cls := "replay-players")(
         div(cls := "winner")(
-          span(cls := "label")("Winner"),
+          span(cls := "win")("Winner"),
           span(cls := "replay-player-name")(
             a(href := s"/player/${row.winnerId.value}")(
               row.winner.value
@@ -33,7 +33,7 @@ object LatestReplays {
           "VS"
         ),
         div(cls := "loser")(
-          span(cls := "label")("Loser"),
+          span(cls := "loss")("Loser"),
           span(cls := "replay-player-name")(
             a(href := s"/player/${row.loserId.value}")(
               row.loser.value

@@ -15,9 +15,9 @@ object CharacterIcons {
 
   private def character(character: DbfzCharacter) =
     img(
-      cls := "character-icon",
-      src := character.imagePath,
-      alt := character.displayName,
+      cls   := "character-icon",
+      src   := character.imagePath,
+      alt   := character.displayName,
       title := character.displayName
     )
 }

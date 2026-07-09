@@ -2,6 +2,22 @@
   {
     "date": "2026-07-09",
     "type": "feat",
+    "title": "Lots of new features",
+    "changes": [
+      "Added 'latest' matches route (shows the last 100 matches that have been polled)",
+      "Added character icons",
+      "Made player page prettier",
+      "Made 'update' page easier to update via JSON",
+      "Increase replays gathered from 100 -> 999 every 60 secs",
+      "Fixed a lot of formatting issues",
+      "Removed unnecessary data presented to the user",
+      "Changed global leaderboard to ONLY show players who have a deviation of less than 75",
+      "Added a status for users who don't have a stable deviation"
+    ]
+  },
+  {
+    "date": "2026-07-09",
+    "type": "feat",
     "title": "Add player profile pages",
     "changes": [
       "Added individual player profile pages",

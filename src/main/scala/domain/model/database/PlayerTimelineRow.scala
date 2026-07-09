@@ -11,15 +11,12 @@ final case class PlayerTimelineRow(
   opponentName: PlayerName,
   opponentId: PlayerId,
   isWin: Boolean,
-
   playerFirst: DbfzCharacter,
   playerSecond: DbfzCharacter,
   playerThird: DbfzCharacter,
-
   opponentFirst: DbfzCharacter,
   opponentSecond: DbfzCharacter,
   opponentThird: DbfzCharacter,
-  
   ratingBefore: Double,
   ratingAfter: Double
 ) {

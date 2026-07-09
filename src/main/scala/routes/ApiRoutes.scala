@@ -17,21 +17,21 @@ final class ApiRoutes(leaderboardService: LeaderboardService, playerService: Pla
 
     case GET -> Root / "api" / "v1" / "leaderboard" => {
       for {
-        players <- leaderboardService.getLeaderboard
+        players  <- leaderboardService.getLeaderboard
         response <- Ok(players)
       } yield response
     }
 
     case GET -> Root / "api" / "v1" / "players" / "search" :? NameQueryParam(name) => {
       for {
-        players <- playerService.search(PlayerName(name))
+        players  <- playerService.search(PlayerName(name))
         response <- Ok(players)
       } yield response
     }
-    
+
     case GET -> Root / "api" / "v1" / "latest" =>
       for {
-        replays <- replayService.getLatest
+        replays  <- replayService.getLatest
         response <- Ok(replays)
       } yield response
   }

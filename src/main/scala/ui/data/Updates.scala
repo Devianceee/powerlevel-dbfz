@@ -10,8 +10,7 @@ import ui.model.SiteUpdate
 import scala.io.Source
 
 object Updates {
-  given Decoder[SiteUpdate] =
-    deriveDecoder[SiteUpdate]
+  given Decoder[SiteUpdate] = deriveDecoder[SiteUpdate]
 
   def load: IO[List[SiteUpdate]] =
     IO {

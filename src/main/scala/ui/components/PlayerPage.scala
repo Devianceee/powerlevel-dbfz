@@ -53,13 +53,11 @@ object PlayerPage {
       td(
         row.playedAt.toLocalDate.toString
       ),
-
       td(
         a(href := s"/player/${row.opponentId.value}")(
           row.opponentName.value
         )
       ),
-
       td(cls := "characters-column")(
         div(cls := "matchup-characters")(
           div(
@@ -67,7 +65,6 @@ object PlayerPage {
           )(
             CharacterIcons.view(row.playerCharacters)
           ),
-
           div(
             cls := s"character-team ${if (row.isWin) "loser-team" else "winner-team"}"
           )(
@@ -75,14 +72,12 @@ object PlayerPage {
           )
         )
       ),
-
       td(
         if (row.isWin)
           span(cls := "win")("Win")
         else
           span(cls := "loss")("Loss")
       ),
-
       td(
         f"${row.ratingBefore}%.0f → ${row.ratingAfter}%.0f"
       )

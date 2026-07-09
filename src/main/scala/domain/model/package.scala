@@ -17,11 +17,13 @@ package object model {
 
     given dbfzCharacterMeta: Meta[DbfzCharacter] =
       Meta[Short].timap { id =>
-        DbfzCharacter.fromId(id.toInt).getOrElse(
-          throw new IllegalArgumentException(
-            s"Unknown DBFZ character id: $id"
+        DbfzCharacter
+          .fromId(id.toInt)
+          .getOrElse(
+            throw new IllegalArgumentException(
+              s"Unknown DBFZ character id: $id"
+            )
           )
-        )
       }(_.id.toShort)
   }
 

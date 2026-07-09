@@ -99,9 +99,9 @@ object MessagePackCodec:
               replayId = ReplayId(matchData._1),
               timestamp = LocalDateTime.parse(matchData._9, timestampFormatter).atOffset(ZoneOffset.UTC),
               winningPlayer = winner,
-              winningCharacters = MatchCharacters.insertCharacters(matchData._4),
+              winningCharacters = MatchCharacters.fromIds(matchData._4),
               losingPlayer = loser,
-              losingCharacters = MatchCharacters.insertCharacters(matchData._5)
+              losingCharacters = MatchCharacters.fromIds(matchData._5)
             )
             record.replayId -> record
           }

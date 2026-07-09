@@ -1,7 +1,7 @@
 package repository
 
 import cats.effect.IO
-import domain.model.Metas.playerIdMeta
+import domain.model.Metas.given
 import domain.model.database.DbRatingRow
 import domain.model.{Player, PlayerId, Rating}
 import doobie.implicits.*

@@ -14,6 +14,6 @@ final class LeaderboardServiceImpl(xa: Transactor[IO], leaderboardQueries: Leade
   override def getLeaderboard: IO[List[LeaderboardRowResponse]] =
     (for {
       data <- leaderboardQueries.globalLeaderboard()
-      resp = data.map(p => LeaderboardRowResponse(playerId = p.playerId, name = p.name, rating = p.rating, rd = p.rd, volatility = p.volatility))
+      resp = data.map(p => LeaderboardRowResponse(playerId = p.playerId, name = p.name, rating = p.rating, rd = p.rd))
     } yield resp).transact(xa)
 }

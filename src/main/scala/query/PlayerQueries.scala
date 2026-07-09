@@ -7,8 +7,6 @@ import domain.model.*
 import domain.model.Metas.given
 import domain.model.database.{PlayerProfileRow, PlayerSearchRow, PlayerTimelineRow}
 
-import java.time.OffsetDateTime
-
 trait PlayerQueries {
   def findPlayers(name: PlayerName, limit: Int = 20): ConnectionIO[List[PlayerSearchRow]]
   def playerProfile(playerId: PlayerId): ConnectionIO[PlayerProfileRow]
@@ -43,95 +41,98 @@ final class DoobiePlayerQueries extends PlayerQueries {
       SELECT
         p.id,
         p.name,
-
         r.rating,
-        r.deviation,
-        r.volatility,
-
-        COUNT(*) FILTER (
-          WHERE replay.winner_id = p.id
-        ) AS wins,
-
-        COUNT(*) FILTER (
-          WHERE replay.loser_id = p.id
-        ) AS losses,
-
-        (
-          COUNT(*) FILTER (
-            WHERE replay.winner_id = p.id
-          )::double precision
-          /
-          NULLIF(COUNT(*), 0)
-          * 100
-        ) AS win_rate
+        r.deviation
 
       FROM player p
-
       LEFT JOIN rating r
         ON r.player_id = p.id
-
-      LEFT JOIN rating_history rh
-        ON rh.player_id = p.id
-
-      LEFT JOIN replay
-        ON replay.id = rh.replay_id
-
       WHERE p.id = $playerId
-
-      GROUP BY
-        p.id,
-        p.name,
-        r.rating,
-        r.deviation,
-        r.volatility
 
     """.query[PlayerProfileRow].unique
 
   override def playerTimeline(playerId: PlayerId, limit: Int = 100): ConnectionIO[List[PlayerTimelineRow]] =
     sql"""
-      SELECT
-        rh.replay_id,
-        r.played_at,
+    SELECT
+      rh.replay_id,
+      r.played_at,
 
-        CASE
-          WHEN r.winner_id = $playerId
-          THEN loser.name
-          ELSE winner.name
-        END AS opponent_name,
+      CASE
+        WHEN r.winner_id = $playerId
+        THEN loser.name
+        ELSE winner.name
+      END,
 
-        CASE
-          WHEN r.winner_id = $playerId
-          THEN loser.id
-          ELSE winner.id
-        END AS opponent_id,
+      CASE
+        WHEN r.winner_id = $playerId
+        THEN loser.id
+        ELSE winner.id
+      END,
 
-        CASE
-          WHEN r.winner_id = $playerId
-          THEN TRUE
-          ELSE FALSE
-        END AS is_win,
+      CASE
+        WHEN r.winner_id = $playerId
+        THEN TRUE
+        ELSE FALSE
+      END,
 
-        rh.rating_before,
-        rh.rating_after
+      CASE
+        WHEN r.winner_id = $playerId
+        THEN r.winner_character_1
+        ELSE r.loser_character_1
+      END,
 
-      FROM rating_history rh
+      CASE
+        WHEN r.winner_id = $playerId
+        THEN r.winner_character_2
+        ELSE r.loser_character_2
+      END,
 
-      JOIN replay r
-        ON r.id = rh.replay_id
+      CASE
+        WHEN r.winner_id = $playerId
+        THEN r.winner_character_3
+        ELSE r.loser_character_3
+      END,
 
-      JOIN player winner
-        ON winner.id = r.winner_id
+      CASE
+        WHEN r.winner_id = $playerId
+        THEN r.loser_character_1
+        ELSE r.winner_character_1
+      END,
 
-      JOIN player loser
-        ON loser.id = r.loser_id
+      CASE
+        WHEN r.winner_id = $playerId
+        THEN r.loser_character_2
+        ELSE r.winner_character_2
+      END,
 
-      WHERE rh.player_id = $playerId
+      CASE
+        WHEN r.winner_id = $playerId
+        THEN r.loser_character_3
+        ELSE r.winner_character_3
+      END,
 
-      ORDER BY r.played_at DESC
+      rh.rating_before,
+      rh.rating_after
 
-      LIMIT $limit
+    FROM rating_history rh
 
-    """.query[PlayerTimelineRow].to[List]
+    JOIN replay r
+      ON r.id = rh.replay_id
+
+    JOIN player winner
+      ON winner.id = r.winner_id
+
+    JOIN player loser
+      ON loser.id = r.loser_id
+
+    WHERE rh.player_id = $playerId
+
+    ORDER BY r.played_at DESC
+
+    LIMIT $limit
+  """
+      .query[PlayerTimelineRow]
+      .to[List]
 
   override def winRate(playerId: PlayerId): ConnectionIO[WinRateRow] =
     sql"""

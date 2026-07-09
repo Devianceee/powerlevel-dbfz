@@ -88,7 +88,7 @@ main {
   margin-top: 20px;
 }
 
-.card h2 {
+.card > h2 {
   margin-top: 0;
   margin-bottom: 16px;
   font-size: 1.25rem;
@@ -100,22 +100,22 @@ main {
 .player-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 20px;
-  margin-bottom: 20px;
+  align-items: flex-start;
+  gap: 1rem;
 }
 
-.player-header h2 {
+.player-profile-name {
   margin: 0;
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 700;
+  line-height: 1.2;
+  color: var(--text);
 }
 
 .player-header p {
-  margin: 4px 0 0 0;
+  margin: 0;
   color: var(--muted);
-  font-size: 0.875rem;
+  font-size: 0.9rem;
 }
 
 .player-rating {
@@ -131,7 +131,7 @@ main {
 }
 
 .player-rating p {
-  margin: 4px 0 0 0;
+  margin: 4px 0 0;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -169,27 +169,6 @@ main {
   font-weight: 700;
 }
 
-/* Win/Loss Status Badges */
-.win {
-  color: var(--win);
-  background: rgba(16, 185, 129, 0.12);
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.815rem;
-  display: inline-block;
-}
-
-.loss {
-  color: var(--loss);
-  background: rgba(239, 68, 68, 0.12);
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.815rem;
-  display: inline-block;
-}
-
 /* ---------------- HOMEPAGE LEADERBOARD ---------------- */
 
 .rank {
@@ -203,7 +182,8 @@ main {
 
 .rating-cell {
   text-align: right;
-  font-variant-numeric: tabular-nums; /* Keeps numbers perfectly vertically aligned */
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .rating-main {
@@ -212,17 +192,135 @@ main {
 }
 
 .rating-deviation {
+  display: inline-block;
   font-size: 0.8rem;
   color: var(--muted);
   font-weight: 400;
-  margin-left: 4px;
+  margin-left: 0.25rem;
 }
 
-.volatility-cell {
-  text-align: right;
-  color: var(--muted);
-  font-size: 0.85rem;
-  font-variant-numeric: tabular-nums;
+/* ---------------- LATEST REPLAYS/MATCHES ---------------- */
+
+.latest-replays {
+    margin-top: 2rem;
+}
+
+.latest-replays h2 {
+    margin-bottom: 1rem;
+}
+
+.replay-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.replay-card {
+    background: #1e1e1e;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.replay-time {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin-bottom: 0.75rem;
+}
+
+.replay-players {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1rem;
+}
+
+.winner,
+.loser {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    opacity: 0.6;
+}
+
+.replay-player-name {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.vs {
+    font-weight: bold;
+    opacity: 0.6;
+}
+
+.character-icons {
+    display: flex;
+    justify-content: center;
+    gap: 0.25rem;
+}
+
+.character-icon {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+}
+
+.matchup-characters {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.character-team {
+    display: flex;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.15rem;
+    border-radius: 6px;
+}
+
+.characters-column {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.matchup-characters .character-icon {
+    width: 40px;
+    height: 40px;
+}
+
+/* Result highlighting */
+.winner-team {
+    background: rgba(16, 185, 129, 0.15);
+}
+
+.loser-team {
+    opacity: 0.55;
+}
+
+.win,
+.loss {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.win {
+    color: var(--win);
+    background: rgba(16, 185, 129, 0.15);
+}
+
+.loss {
+    color: var(--loss);
+    background: rgba(239, 68, 68, 0.15);
 }
 
 /* ---------------- TABLE ---------------- */
@@ -374,10 +472,12 @@ footer {
   .footer-nav ul {
     justify-content: center;
   }
+  .replay-players {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
 
-  /* Hides the volatility column entirely on mobile */
-  .volatility-cell,
-  .vol-header {
-    display: none;
-  }
+    .vs {
+      display: none;
+    }
 }

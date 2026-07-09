@@ -4,6 +4,9 @@ import domain.model.{MatchResult, Rating, RatingUpdate}
 
 import scala.math.{Pi, abs, exp, log, sqrt}
 
+// Inspired and heavily used Lichess's implementation of Glicko2 rating
+// https://github.com/lichess-org/lila/blob/f70492bd91025a365e9b9903432146c8a5321cb0/modules/rating/src/main/Glicko.scala
+
 final class Glicko2Calculator {
 
   private val Tau                  = 0.5

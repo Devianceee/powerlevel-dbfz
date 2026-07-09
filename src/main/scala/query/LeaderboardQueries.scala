@@ -1,6 +1,6 @@
 package query
 
-import domain.model.Metas.{playerIdMeta, playerNameMeta}
+import domain.model.Metas.given
 import domain.model.database.DbLeaderboardRow
 import doobie.*
 import doobie.implicits.*
@@ -15,33 +15,17 @@ final class DoobieLeaderboardQueries extends LeaderboardQueries {
       SELECT
         p.id,
         p.name,
-
         r.rating,
-        r.deviation,
-        r.volatility,
-
-        (r.rating - 2 * r.deviation) AS conservative_rating,
-
-        COUNT(rh.id) AS games_played
+        r.deviation
 
       FROM rating r
-
+  
       JOIN player p
         ON p.id = r.player_id
 
-      JOIN rating_history rh
-        ON rh.player_id = p.id
+      WHERE r.deviation < 75 
 
-      GROUP BY
-        p.id,
-        p.name,
-        r.rating,
-        r.deviation,
-        r.volatility
-
-      HAVING COUNT(rh.id) >= 10
-
-      ORDER BY conservative_rating DESC
+      ORDER BY r.rating DESC
 
       LIMIT $limit
     """.query[DbLeaderboardRow].to[List]

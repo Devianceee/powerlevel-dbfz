@@ -8,16 +8,21 @@ object LeaderboardTable {
   def row(rank: Int, entry: LeaderboardRowResponse) =
     tr(
       td(cls := "rank")(rank.toString),
-      td(a(href := s"/player/${entry.playerId}")(entry.name.value)),
-      td(cls := "rating-cell")(
-        // Main rating rounded to an integer string
-        span(cls := "rating-main")(f"${entry.rating}%.0f"),
-        // Muted deviation sitting cleanly right next to it
-        r => span(cls := "rating-deviation")(f" ±${entry.rd}%.0f")
+      td(
+        a(href := s"/player/${entry.playerId}")(
+          entry.name.value
+        )
       ),
-      // Volatility tucked into its own low-priority column
-      td(cls := "volatility-cell")(
-        f"${entry.volatility}%.3f"
+      td(cls := "rating-cell")(
+        span(cls := "rating-main")(
+          f"${entry.rating}%.0f"
+        ),
+        span(
+          cls   := "rating-deviation",
+          title := "Rating deviation. Lower means the rating is more reliable."
+        )(
+          f" ± ${entry.rd}%.0f"
+        )
       )
     )
 
@@ -27,12 +32,13 @@ object LeaderboardTable {
         tr(
           th("Rank"),
           th("Player"),
-          th(cls := "num-header")("Rating"),
-          th(cls := "num-header vol-header")("Vol")
+          th(cls := "num-header")("Rating")
         )
       ),
       tbody(
-        players.zipWithIndex.map { case (p, i) => row(i + 1, p) }*
+        players.zipWithIndex.map { case (p, i) =>
+          row(i + 1, p)
+        }*
       )
     )
 }

@@ -32,7 +32,6 @@ final class PlayerServiceImpl(xa: Transactor[IO], playerQueries: PlayerQueries)(
       name = profile.name,
       rating = profile.rating,
       rd = profile.deviation,
-      volatility = profile.volatility,
       wins = winrate.wins,
       losses = winrate.losses,
       winRate = winrate.winRate,

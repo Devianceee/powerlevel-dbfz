@@ -10,21 +10,37 @@ object PlayerPage {
     frag(
       div(cls := "card")(
         div(cls := "player-header")(
-          div(h2(player.name.value), p(s"Player ID: ${player.playerId.value}")),
-          div(cls := "player-rating")(h1(player.rating.map(r => f"$r%.2f"), p("Rating")))
-        ),
-        div(cls := "player-stats")(
-          stat("Wins", Some(player.wins.toString)),
-          stat("Losses", Some(player.losses.toString)),
-          stat("Win Rate", Some(f"${player.winRate}%.1f%%")),
-          stat("Deviation", player.rd.map(rd => f"$rd%.1f")),
-          stat("Volatility", player.volatility.map(v => f"$v%.4f"))
+          div(
+            h2(
+              cls := "player-profile-name"
+            )(player.name.value),
+            p(
+              s"Player ID: ${player.playerId.value}"
+            )
+          ),
+          player.rating.map { rating =>
+            div(cls := "player-rating")(
+              h1(
+                f"$rating%.0f" +
+                  player.rd.fold("")(rd => f" ± $rd%.0f")
+              ),
+              p("Rating")
+            )
+          }
         )
       ),
       div(cls := "card")(
         h2("Match History"),
         table(cls := "leaderboard-table")(
-          thead(tr(th("Date"), th("Opponent"), th("Result"), th("Rating"))),
+          thead(
+            tr(
+              th("Date"),
+              th("Opponent"),
+              th(cls := "characters-column")("Characters"),
+              th("Result"),
+              th("Rating")
+            )
+          ),
           tbody(player.timeline.map(matchRow)*)
         )
       )
@@ -34,9 +50,41 @@ object PlayerPage {
 
   private def matchRow(row: PlayerTimelineRow) =
     tr(
-      td(row.playedAt.toLocalDate.toString),
-      td(a(href := s"/player/${row.opponentId.value}")(row.opponentName.value)),
-      td(if (row.isWin) span(cls := "win")("Win") else span(cls := "loss")("Loss")),
-      td(f"${row.ratingBefore}%.0f → ${row.ratingAfter}%.0f")
+      td(
+        row.playedAt.toLocalDate.toString
+      ),
+
+      td(
+        a(href := s"/player/${row.opponentId.value}")(
+          row.opponentName.value
+        )
+      ),
+
+      td(cls := "characters-column")(
+        div(cls := "matchup-characters")(
+          div(
+            cls := s"character-team ${if (row.isWin) "winner-team" else "loser-team"}"
+          )(
+            CharacterIcons.view(row.playerCharacters)
+          ),
+
+          div(
+            cls := s"character-team ${if (row.isWin) "loser-team" else "winner-team"}"
+          )(
+            CharacterIcons.view(row.opponentCharacters)
+          )
+        )
+      ),
+
+      td(
+        if (row.isWin)
+          span(cls := "win")("Win")
+        else
+          span(cls := "loss")("Loss")
+      ),
+
+      td(
+        f"${row.ratingBefore}%.0f → ${row.ratingAfter}%.0f"
+      )
     )
 }

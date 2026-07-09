@@ -1,0 +1,31 @@
+[
+  {
+    "date": "2026-07-09",
+    "type": "feat",
+    "title": "add player profile pages",
+    "changes": [
+      "Added individual player profile pages",
+      "Added match history timeline",
+      "Added Glicko-2 rating statistics"
+    ]
+  },
+  {
+    "date": "2026-07-08",
+    "type": "feat",
+    "title": "add leaderboard improvements",
+    "changes": [
+      "Added player search using HTMX",
+      "Added rating deviation filtering",
+      "Added established player rankings"
+    ]
+  },
+  {
+    "date": "2026-07-07",
+    "type": "fix",
+    "title": "correct win rate calculation",
+    "changes": [
+      "Fixed win rate displaying as a fraction instead of a percentage",
+      "Updated player statistics display"
+    ]
+  }
+]

@@ -3,6 +3,7 @@ ThisBuild / scalaVersion := "3.3.8"
 val CatsEffectVersion = "3.7.0"
 val Http4sVersion     = "0.23.32"
 val CirceVersion      = "0.14.14"
+val EnumeratumVersion = "1.9.8"
 val DoobieVersion     = "1.0.0-RC10"
 val TapirVersion      = "1.11.49"
 val ScalatagsVersion  = "0.13.1"
@@ -26,6 +27,9 @@ lazy val root = (project in file("."))
       "io.circe" %% "circe-core"    % CirceVersion,
       "io.circe" %% "circe-generic" % CirceVersion,
       "io.circe" %% "circe-parser"  % CirceVersion,
+
+      // Enumeratum
+      "com.beachape" %% "enumeratum" % "1.9.8",
 
       // Tapir
       "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"     % TapirVersion,
@@ -52,9 +56,8 @@ lazy val root = (project in file("."))
       "com.lihaoyi" %% "scalatags" % ScalatagsVersion,
 
       // Logging
-      "org.typelevel" %% "log4cats-slf4j"  % "2.7.1",
-      "ch.qos.logback" % "logback-classic" % "1.5.18",
-
+      "org.typelevel"      %% "log4cats-slf4j"   % "2.7.1",
+      "ch.qos.logback"      % "logback-classic"  % "1.5.18",
       "org.wvlet.airframe" %% "airframe-msgpack" % "2026.2.2",
       "org.wvlet.airframe" %% "airframe-codec"   % "2026.2.2",
       "org.scodec"         %% "scodec-core"      % "2.3.3",
@@ -63,10 +66,8 @@ lazy val root = (project in file("."))
       "org.scalameta" %% "munit"             % "1.2.1" % Test,
       "org.typelevel" %% "munit-cats-effect" % "2.1.0" % Test
     ),
-
     assembly / mainClass       := Some("Main"),
     assembly / assemblyJarName := "app.jar",
-
     scalacOptions ++= Seq(
       "-deprecation",
       "-feature",

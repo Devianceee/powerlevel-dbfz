@@ -1,7 +1,5 @@
 package domain.model
 
-import java.time.Instant
-
 // --- Glicko Math Models ---
 case class Rating(rating: Double, deviation: Double, volatility: Double) {
   def mu: Double  = (rating - 1500.0) / 173.7178

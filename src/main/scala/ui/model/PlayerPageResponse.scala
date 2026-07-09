@@ -8,7 +8,6 @@ case class PlayerPageResponse(
   name: PlayerName,
   rating: Option[Double],
   rd: Option[Double],
-  volatility: Option[Double],
   wins: Int,
   losses: Int,
   winRate: Double,

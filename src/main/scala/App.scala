@@ -41,21 +41,23 @@ object App {
       replayClient <- replayClientResource(config)
 
       // -- Setup WRITE services + scheduler (isn't used by UI + API) --
-      replayService = RatingServiceImpl(xa, replayClient, playerRepository, replayRepository, ratingRepository, ratingHistoryRepository, calculator)
+      ingestService = IngestServiceImpl(xa, replayClient, playerRepository, replayRepository, ratingRepository, ratingHistoryRepository, calculator)
 
-      backfillService = BackfillServiceImpl(replayService)
-      pollingService  = ReplayPollingImpl(config.pollingConfig, replayService)
+      backfillService = BackfillServiceImpl(ingestService)
+      pollingService  = ReplayPollingImpl(config.pollingConfig, ingestService)
 
       // -- Setup READ services + routes (used by UI + API) --
       leaderboardQueries = DoobieLeaderboardQueries()
       playerQueries      = DoobiePlayerQueries()
+      replayQueries      = DoobieReplaysQueries()
 
       leaderboardService = LeaderboardServiceImpl(xa, leaderboardQueries)
       playerService      = PlayerServiceImpl(xa, playerQueries)
+      replayService      = ReplayServiceImpl(xa, replayQueries)
 
       assetRoutes  = AssetRoutes.routes
-      apiRoutes    = ApiRoutes(leaderboardService, playerService).routes
-      uiRoutes     = UiRoutes(leaderboardService, playerService).routes
+      apiRoutes    = ApiRoutes(leaderboardService, playerService, replayService).routes
+      uiRoutes     = UiRoutes(leaderboardService, playerService, replayService).routes
       healthRoutes = HealthRoutes.routes
 
       httpApp = (assetRoutes <+> healthRoutes <+> apiRoutes <+> uiRoutes).orNotFound
@@ -76,7 +78,7 @@ object App {
 
     } yield ExitCode.Success
 
-  private def httpClient: Resource[IO, Client[IO]] = EmberClientBuilder.default[IO].withTimeout(60.seconds).withIdleConnectionTime(60.seconds).build
+  private def httpClient: Resource[IO, Client[IO]] = EmberClientBuilder.default[IO].withTimeout(59.seconds).withIdleConnectionTime(60.seconds).build
 
   private def loginClient(client: Client[IO], config: DbfzConfig): LoginClient = HttpLoginClient(client, config)
 

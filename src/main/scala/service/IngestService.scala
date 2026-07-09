@@ -12,11 +12,11 @@ import org.typelevel.log4cats.Logger
 import rating.Glicko2Calculator
 import repository.{PlayerRepository, RatingHistoryRepository, RatingRepository, ReplayRepository}
 
-trait RatingService {
+trait IngestService {
   def ingest(limit: Int): IO[Unit]
 }
 
-final class RatingServiceImpl(
+final class IngestServiceImpl(
   xa: Transactor[IO],
   client: ReplayClient,
   playerRepo: PlayerRepository,
@@ -25,7 +25,7 @@ final class RatingServiceImpl(
   ratingHistoryRepo: RatingHistoryRepository,
   ratingCalculator: Glicko2Calculator
 )(using logger: Logger[IO])
-    extends RatingService {
+    extends IngestService {
 
   override def ingest(limit: Int): IO[Unit] =
     for {

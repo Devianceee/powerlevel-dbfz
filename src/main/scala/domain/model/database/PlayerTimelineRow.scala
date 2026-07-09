@@ -1,6 +1,7 @@
 package domain.model.database
 
-import domain.model.{PlayerId, PlayerName, ReplayId}
+import domain.enums.DbfzCharacter
+import domain.model.{MatchCharacters, PlayerId, PlayerName, ReplayId}
 
 import java.time.OffsetDateTime
 
@@ -10,6 +11,26 @@ final case class PlayerTimelineRow(
   opponentName: PlayerName,
   opponentId: PlayerId,
   isWin: Boolean,
+  playerFirst: DbfzCharacter,
+  playerSecond: DbfzCharacter,
+  playerThird: DbfzCharacter,
+  opponentFirst: DbfzCharacter,
+  opponentSecond: DbfzCharacter,
+  opponentThird: DbfzCharacter,
   ratingBefore: Double,
   ratingAfter: Double
-)
+) {
+  def playerCharacters: MatchCharacters =
+    MatchCharacters(
+      playerFirst,
+      playerSecond,
+      playerThird
+    )
+
+  def opponentCharacters: MatchCharacters =
+    MatchCharacters(
+      opponentFirst,
+      opponentSecond,
+      opponentThird
+    )
+}

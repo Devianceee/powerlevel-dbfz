@@ -1,6 +1,5 @@
 package repository
 
-import domain.model.Rating
 import domain.model.database.DbRatingHistoryInsert
 import doobie.ConnectionIO
 import doobie.implicits.*

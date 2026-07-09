@@ -1,12 +1,10 @@
 package repository
 
-import cats.data.NonEmptyList
-import cats.effect.IO
 import domain.model.database.DbReplayRow
-import domain.model.{MatchRecord, ReplayId}
+import domain.model.ReplayId
 import doobie.implicits.*
 import doobie.postgres.implicits.*
-import doobie.{ConnectionIO, Transactor}
+import doobie.ConnectionIO
 
 trait ReplayRepository {
   def insert(replay: DbReplayRow): ConnectionIO[Int]
@@ -38,13 +36,13 @@ final class DoobieReplayRepository extends ReplayRepository {
       ${replay.winnerId.value},
       ${replay.loserId.value},
 
-      ${replay.winnerCharacters.first},
-      ${replay.winnerCharacters.second},
-      ${replay.winnerCharacters.third},
+      ${replay.winnerCharacters.first.id},
+      ${replay.winnerCharacters.second.id},
+      ${replay.winnerCharacters.third.id},
 
-      ${replay.loserCharacters.first},
-      ${replay.loserCharacters.second},
-      ${replay.loserCharacters.third},
+      ${replay.loserCharacters.first.id},
+      ${replay.loserCharacters.second.id},
+      ${replay.loserCharacters.third.id},
 
       ${replay.playedAt}
     )

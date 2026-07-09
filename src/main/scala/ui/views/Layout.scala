@@ -23,7 +23,8 @@ object Layout {
               ul(
                 li(a(href := "/about")("About")),
                 li(a(href := "/updates")("Updates")),
-                li(a(href := "/api")("API"))
+                li(a(href := "/api")("API")),
+                li(a(href := "/latest")("Latest matches"))
               )
             )
           )

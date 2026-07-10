@@ -10,6 +10,9 @@ object Layout {
         tags2.title(pageTitle),
         meta(charset                   := "utf-8"),
         meta(scalatags.Text.attrs.name := "viewport", scalatags.Text.attrs.content := "width=device-width, initial-scale=1"),
+        link(rel                       := "preconnect", href                       := "https://fonts.googleapis.com"),
+        link(rel := "preconnect", href := "https://fonts.gstatic.com", crossorigin := "anonymous"),
+        link(rel                       := "stylesheet", href                       := "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"),
         link(rel                       := "stylesheet", href                       := "/assets/powerlevel.css"),
         script(src                     := "https://unpkg.com/htmx.org@1.9.11")
       ),

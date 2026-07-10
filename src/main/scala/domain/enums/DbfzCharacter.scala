@@ -28,7 +28,7 @@ object DbfzCharacter extends Enum[DbfzCharacter] {
   case object Gotenks           extends DbfzCharacter(9, "Gotenks")
   case object Krillin           extends DbfzCharacter(10, "Krillin")
   case object KidBuu            extends DbfzCharacter(11, "Kid Buu")
-  case object MajinBoo          extends DbfzCharacter(12, "Majin Buu")
+  case object MajinBuu          extends DbfzCharacter(12, "Majin Buu")
   case object Nappa             extends DbfzCharacter(13, "Nappa")
   case object Android16         extends DbfzCharacter(14, "Android 16")
   case object Yamcha            extends DbfzCharacter(15, "Yamcha")

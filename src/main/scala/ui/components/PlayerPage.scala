@@ -37,7 +37,7 @@ object PlayerPage {
         )
       ),
       div(cls := "card")(
-        h2("Match History"),
+        h2(cls := "leaderboard-title")("Match History"),
         div(cls := "table-container")(
           table(cls := "leaderboard-table")(
             thead(

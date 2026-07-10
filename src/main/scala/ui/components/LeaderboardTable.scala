@@ -27,18 +27,25 @@ object LeaderboardTable {
     )
 
   def view(players: List[LeaderboardRowResponse]) =
-    table(cls := "leaderboard-table")(
-      thead(
-        tr(
-          th("Rank"),
-          th("Player"),
-          th(cls := "num-header")("Rating")
-        )
+    div(
+      div(cls := "leaderboard-info")(
+        "Only players with a rating deviation < 75 will appear on the leaderboard"
       ),
-      tbody(
-        players.zipWithIndex.map { case (p, i) =>
-          row(i + 1, p)
-        }*
+      div(cls := "table-container")(
+        table(cls := "leaderboard-table")(
+          thead(
+            tr(
+              th("Rank"),
+              th("Player"),
+              th(cls := "num-header")("Rating")
+            )
+          ),
+          tbody(
+            players.zipWithIndex.map { case (p, i) =>
+              row(i + 1, p)
+            }*
+          )
+        )
       )
     )
 }

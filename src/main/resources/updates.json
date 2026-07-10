@@ -6,7 +6,9 @@
     "changes": [
       "Added on leaderboard, quick reason why someone might not appear (hoverable)",
       "Added back in winrate, wins and losses on userpage",
-      "Update match history and replays page timestamps to show hours, mins and secs"
+      "Update match history and replays page timestamps to show hours, mins and secs",
+      "Upgraded mobile UI and UX and make player search easier to click",
+      "UI improvements in general such as font. centring text, etc."
     ]
   },
   {

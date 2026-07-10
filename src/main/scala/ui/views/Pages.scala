@@ -6,9 +6,9 @@ import ui.model.{LatestReplayRowResponse, LeaderboardRowResponse, PlayerPageResp
 
 object Pages {
 
-  def leaderboard(topPlayers: List[LeaderboardRowResponse]) =
+  def homepage(topPlayers: List[LeaderboardRowResponse]) =
     Layout
-      .basePage("Leaderboard")(div(cls := "container")(PlayerSearch.view, div(cls := "card")(h2("Top 100 Players"), LeaderboardTable.view(topPlayers))))
+      .basePage("Leaderboard")(div(cls := "container")(PlayerSearch.view, div(cls := "card")(h2(cls := "leaderboard-title")("Top 100 Players"), LeaderboardTable.view(topPlayers))))
 
   def player(player: PlayerPageResponse) = Layout.basePage(player.name.value)(div(cls := "container")(PlayerPage.view(player)))
 

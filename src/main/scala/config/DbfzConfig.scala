@@ -15,7 +15,7 @@ object DbfzConfig {
 
     val gameVersion: ConfigValue[Effect, GameVersion] = env("DBFZ_GAME_VERSION").as[GameVersion].default(GameVersion(35))
 
-    val steamId: ConfigValue[Effect, SteamId] = env("DBFZ_STEAM_ID").as[SteamId].default(SteamId(76561198077238939L))
+    val steamId: ConfigValue[Effect, SteamId] = env("DBFZ_STEAM_ID").as[SteamId]
 
     (baseUri, gameVersion, steamId).mapN(DbfzConfig(_, _, _))
   }

@@ -145,28 +145,37 @@ main {
   gap: 16px;
 }
 
+.player-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
 .stat {
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
 }
 
 .stat-label {
-  font-size: 0.75rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 500;
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
 }
 
 .stat strong {
-  font-size: 1.35rem;
-  color: var(--text);
-  font-weight: 700;
+    display: block;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text);
 }
 
 /* ---------------- HOMEPAGE LEADERBOARD ---------------- */

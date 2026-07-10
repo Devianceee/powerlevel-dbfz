@@ -3,6 +3,7 @@ package ui.components
 import domain.model.database.PlayerTimelineRow
 import scalatags.Text.all.*
 import ui.model.*
+import util.DateFormats
 
 object PlayerPage {
 
@@ -11,13 +12,12 @@ object PlayerPage {
       div(cls := "card")(
         div(cls := "player-header")(
           div(
-            h2(
-              cls := "player-profile-name"
-            )(player.name.value),
+            h2(cls := "player-profile-name")(player.name.value),
             p(
               s"Player ID: ${player.playerId.value}"
             )
           ),
+
           player.rating.map { rating =>
             div(cls := "player-rating")(
               h1(
@@ -27,6 +27,13 @@ object PlayerPage {
               p("Rating")
             )
           }
+        ),
+
+        div(cls := "player-summary")(
+          stat("Wins", Some(player.wins.toString)),
+          stat("Losses", Some(player.losses.toString)),
+          stat("Win Rate", Some(f"${player.winRate}%.1f%%")),
+          stat("Matches", Some((player.wins + player.losses).toString))
         )
       ),
       div(cls := "card")(
@@ -51,7 +58,7 @@ object PlayerPage {
   private def matchRow(row: PlayerTimelineRow) =
     tr(
       td(
-        row.playedAt.toLocalDate.toString
+        row.playedAt.format(DateFormats.format)
       ),
       td(
         a(href := s"/player/${row.opponentId.value}")(

@@ -38,5 +38,9 @@ object PlayerSearch {
   // -------------------------
   // Row rendering
   // -------------------------
-  def row(p: PlayerSearchResponse) = tr(td(a(href := s"/player/${p.playerId}")(p.name.value)), td(cls := "rating")(p.rating.map(r => f"$r%.0f")))
+  def row(p: PlayerSearchResponse) =
+    tr(
+      td(a(href := s"/player/${p.playerId}")(p.name.value)),
+      td(cls := "rating")(a(href := s"/player/${p.playerId}")(p.rating.map(r => f"$r%.0f")))
+    )
 }

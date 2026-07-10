@@ -15,7 +15,7 @@ final class UiRoutes(leaderboardService: LeaderboardService, playerService: Play
 
   val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => // Homepage
-      leaderboardService.getLeaderboard.flatMap { players => Ok(Pages.leaderboard(players).render) }
+      leaderboardService.getLeaderboard.flatMap { players => Ok(Pages.homepage(players).render) }
 
     case req @ GET -> Root / "player" / "search" =>
       val q = req.params.getOrElse("q", "")

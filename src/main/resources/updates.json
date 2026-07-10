@@ -1,5 +1,17 @@
 [
   {
+    "date": "2026-07-10",
+    "type": "feat",
+    "title": "UI updates",
+    "changes": [
+      "Added on leaderboard, quick reason why someone might not appear (hoverable)",
+      "Added back in winrate, wins and losses on userpage",
+      "Update match history and replays page timestamps to show hours, mins and secs",
+      "Upgraded mobile UI and UX and make player search easier to click",
+      "UI improvements in general such as font. centring text, etc."
+    ]
+  },
+  {
     "date": "2026-07-09",
     "type": "feat",
     "title": "Lots of new features",

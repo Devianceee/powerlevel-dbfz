@@ -15,7 +15,7 @@ final class DoobieReplaysQueries extends ReplaysQueries {
     sql"""
       SELECT
         r.id,
-        r.created_at,
+        r.played_at,
 
         winner.id,
         winner.name,
@@ -38,7 +38,7 @@ final class DoobieReplaysQueries extends ReplaysQueries {
       JOIN player loser
         ON loser.id = r.loser_id
 
-      ORDER BY r.created_at DESC
+      ORDER BY r.played_at DESC
 
       LIMIT $limit
     """

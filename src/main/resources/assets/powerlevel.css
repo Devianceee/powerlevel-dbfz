@@ -16,6 +16,10 @@
   --loss: #ef4444;
 }
 
+td {
+    padding: 10px 12px;
+}
+
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
@@ -46,7 +50,8 @@ header {
 
 .header-container h1 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 .header-container nav ul {
@@ -81,7 +86,9 @@ main {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 24px;
+  padding: 20px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .card + .card {
@@ -93,6 +100,12 @@ main {
   margin-bottom: 16px;
   font-size: 1.25rem;
   font-weight: 600;
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ---------------- PLAYER DASHBOARD ELEMENTS ---------------- */
@@ -274,9 +287,10 @@ main {
 }
 
 .character-icon {
-    width: 48px;
-    height: 48px;
-    object-fit: contain;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .matchup-characters {
@@ -289,8 +303,9 @@ main {
 .character-team {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 0.25rem;
-    padding: 0.15rem;
+    padding: 0.1rem;
     border-radius: 6px;
 }
 
@@ -299,20 +314,29 @@ main {
     vertical-align: middle;
 }
 
-.matchup-characters .character-icon {
-    width: 40px;
-    height: 40px;
+/* Player timeline */
+.characters-column .character-icon {
+    width: 64px;
+    height: 64px;
+}
+
+/* Latest replay */
+.replay-card .character-icon {
+    width: 48px;
+    height: 48px;
 }
 
 /* Result highlighting */
 .winner-team {
     background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .loser-team {
-    opacity: 0.55;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    opacity: 0.7;
 }
-
 .win,
 .loss {
     display: inline-block;
@@ -330,6 +354,16 @@ main {
 .loss {
     color: var(--loss);
     background: rgba(239, 68, 68, 0.15);
+}
+
+.rating-up {
+    color: var(--win);
+    font-weight: 600;
+}
+
+.rating-down {
+    color: var(--loss);
+    font-weight: 600;
 }
 
 /* ---------------- TABLE ---------------- */
@@ -356,6 +390,11 @@ td {
 
 tr:hover {
   background: rgba(124, 92, 255, 0.04);
+}
+
+.leaderboard-table {
+  min-width: 750px;
+  white-space: nowrap;
 }
 
 /* ---------------- LINKS ---------------- */
@@ -473,20 +512,81 @@ footer {
 
 /* ---------------- RESPONSIVE / MOBILE ---------------- */
 
-@media (max-width: 600px) {
-  .footer-content {
+@media (max-width: 768px) {
+
+ header {
+     padding: 12px 16px;
+   }
+
+   .header-container {
+     flex-direction: column;
+     align-items: center;
+     text-align: center;
+     gap: 12px;
+   }
+
+   .header-container h1 {
+     font-size: 1.5rem;
+   }
+
+   .header-container nav {
+     width: 100%;
+   }
+
+   .header-container nav ul {
+     justify-content: center;
+     flex-wrap: wrap;
+     gap: 16px;
+   }
+
+  main {
+    padding: 20px 12px 100px 12px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .player-header {
     flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .player-rating {
     text-align: center;
   }
-  .footer-nav ul {
-    justify-content: center;
-  }
-  .replay-players {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
 
-    .vs {
-      display: none;
-    }
+  .player-profile-name {
+    font-size: 1.6rem;
+  }
+
+  .player-rating h1 {
+    font-size: 2rem;
+  }
+
+  .player-summary {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .stat {
+    padding: 12px;
+  }
+
+  .table-container {
+    margin: 0 -16px;
+    width: calc(100% + 32px);
+    padding: 0 16px;
+  }
+
+  .leaderboard-table {
+    min-width: 750px;
+  }
+
+  .character-icon {
+    width: 48px;
+    height: 48px;
+  }
 }

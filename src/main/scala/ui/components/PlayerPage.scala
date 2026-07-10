@@ -38,17 +38,19 @@ object PlayerPage {
       ),
       div(cls := "card")(
         h2("Match History"),
-        table(cls := "leaderboard-table")(
-          thead(
-            tr(
-              th("Date"),
-              th("Opponent"),
-              th(cls := "characters-column")("Characters"),
-              th("Result"),
-              th("Rating")
-            )
-          ),
-          tbody(player.timeline.map(matchRow)*)
+        div(cls := "table-container")(
+          table(cls := "leaderboard-table")(
+            thead(
+              tr(
+                th("Date"),
+                th("Opponent"),
+                th(cls := "characters-column")("Your Team"),
+                th(cls := "characters-column")("Opponent Team"),
+                th("Rating")
+              )
+            ),
+            tbody(player.timeline.map(matchRow)*)
+          )
         )
       )
     )
@@ -66,27 +68,26 @@ object PlayerPage {
         )
       ),
       td(cls := "characters-column")(
-        div(cls := "matchup-characters")(
-          div(
-            cls := s"character-team ${if (row.isWin) "winner-team" else "loser-team"}"
-          )(
-            CharacterIcons.view(row.playerCharacters)
-          ),
-          div(
-            cls := s"character-team ${if (row.isWin) "loser-team" else "winner-team"}"
-          )(
-            CharacterIcons.view(row.opponentCharacters)
-          )
+        div(
+          cls := s"character-team ${if (row.isWin) "winner-team" else "loser-team"}"
+        )(
+          CharacterIcons.view(row.playerCharacters)
+        )
+      ),
+
+      td(cls := "characters-column")(
+        div(
+          cls := s"character-team ${if (row.isWin) "loser-team" else "winner-team"}"
+        )(
+          CharacterIcons.view(row.opponentCharacters)
         )
       ),
       td(
-        if (row.isWin)
-          span(cls := "win")("Win")
-        else
-          span(cls := "loss")("Loss")
-      ),
-      td(
-        f"${row.ratingBefore}%.0f → ${row.ratingAfter}%.0f"
+        span(
+          cls := (if (row.isWin) "rating-up" else "rating-down")
+        )(
+          f"${row.ratingBefore}%.0f → ${row.ratingAfter}%.0f"
+        )
       )
     )
 }

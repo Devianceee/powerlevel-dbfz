@@ -31,13 +31,17 @@ jobs:
             echo "Running backfill..."
 
             sudo docker run --rm \
-              --network powerlevel_default \
-              -e DBFZ_STEAM_ID="${{ vars.DBFZ_STEAM_ID }}" \
-              -e DATABASE_URL="jdbc:postgresql://powerlevel-postgres:5432/powerlevel" \
-              -e R2_ACCESS_KEY_ID="${{ secrets.R2_ACCESS_KEY_ID }}" \
-              -e R2_SECRET_KEY="${{ secrets.R2_SECRET_KEY }}" \
-              -e R2_ACCOUNT_ID="${{ secrets.R2_ACCOUNT_ID }}" \
-              ghcr.io/devianceee/powerlevel-dbfz:latest \
-              --backfill
+            --network powerlevel_default \
+            -e DB_HOST=powerlevel-postgres \
+            -e DB_PORT=5432 \
+            -e DB_USER=powerlevel \
+            -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+            -e DB_NAME=powerlevel \
+            -e DBFZ_STEAM_ID="${{ vars.DBFZ_STEAM_ID }}" \
+            -e R2_ACCESS_KEY_ID="${{ secrets.R2_ACCESS_KEY_ID }}" \
+            -e R2_SECRET_KEY="${{ secrets.R2_SECRET_KEY }}" \
+            -e R2_ACCOUNT_ID="${{ secrets.R2_ACCOUNT_ID }}" \
+            ghcr.io/devianceee/powerlevel-dbfz:latest \
+            --backfill
 
             echo "Backfill complete"

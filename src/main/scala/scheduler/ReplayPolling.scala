@@ -11,11 +11,15 @@ trait ReplayPolling {
 }
 
 final class ReplayPollingImpl(config: PollingConfig, ratingService: IngestService) extends ReplayPolling {
-  override def start: IO[Unit] =
-    (for {
+  override def start: IO[Unit] = loop.foreverM
+
+  private def loop: IO[Unit] =
+    for {
       _ <- IO.println("Polling and ingesting latest replays...")
-      _ <- ratingService.ingest(limit = 100)
-      _ <- IO.println(s"Finished, sleeping for ${config.pollingInterval.seconds} seconds.")
+      _ <- ratingService.ingest(limit = 100).handleErrorWith { e =>
+        IO.println(s"Poller failed: ${e.getMessage}")
+      }
+      _ <- IO.println(s"Sleeping for ${config.pollingInterval.seconds} seconds.")
       _ <- IO.sleep(config.pollingInterval.seconds)
-    } yield ()).foreverM
+    } yield ()
 }

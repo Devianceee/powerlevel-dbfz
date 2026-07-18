@@ -35,7 +35,6 @@ jobs:
             -e DB_HOST=powerlevel-postgres \
             -e DB_PORT=5432 \
             -e DB_USER=powerlevel \
-            -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
             -e DB_NAME=powerlevel \
             -e DBFZ_STEAM_ID="${{ vars.DBFZ_STEAM_ID }}" \
             -e R2_ACCESS_KEY_ID="${{ secrets.R2_ACCESS_KEY_ID }}" \

@@ -3,7 +3,6 @@ package service
 import cats.effect.IO
 import cats.syntax.all.toTraverseOps
 import client.ReplayClient
-import client.model.ReplayRequest
 import domain.model.database.{DbPlayerRow, DbRatingHistoryInsert, DbRatingRow, DbReplayRow}
 import domain.model.{MatchRecord, MatchResult, Player, Rating, ReplayId}
 import doobie.{ConnectionIO, FC, Transactor}
@@ -30,7 +29,7 @@ final class IngestServiceImpl(
   override def ingest(limit: Int): IO[Unit] =
     for {
       _        <- logger.info("Getting replays")
-      response <- client.getReplays(ReplayRequest.default)
+      response <- client.getReplays(limit)
       _        <- logger.info("Retrieved replays")
       _        <- response.matches.values.toList.traverse(processMatch) // Go through each replay individually
     } yield ()

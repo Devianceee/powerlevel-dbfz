@@ -8,5 +8,7 @@ trait BackfillService {
 }
 
 final class BackfillServiceImpl(ratingService: IngestService) extends BackfillService {
-  override def run: IO[Unit] = ratingService.ingest(50000)
+  override def run: IO[Unit] = ratingService.ingest(50000).handleErrorWith { e =>
+    IO.println(s"Backfill failed: ${e.getMessage}")
+  }
 }

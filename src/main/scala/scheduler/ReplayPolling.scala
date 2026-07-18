@@ -16,7 +16,7 @@ final class ReplayPollingImpl(config: PollingConfig, ratingService: IngestServic
   private def loop: IO[Unit] =
     for {
       _ <- IO.println("Polling and ingesting latest replays...")
-      _ <- ratingService.ingest(limit = 100).handleErrorWith { e =>
+      _ <- ratingService.ingest(limit = 999).handleErrorWith { e =>
         IO.println(s"Poller failed: ${e.getMessage}")
       }
       _ <- IO.println(s"Sleeping for ${config.pollingInterval.seconds} seconds.")

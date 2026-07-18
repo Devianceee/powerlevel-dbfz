@@ -1,6 +1,6 @@
 package util
 
-import client.model.{LoginRequest, LoginResponse, ReplayRequest, ReplayResponse}
+import client.model.{LoginRequest, LoginResponse, ReplayResponse}
 import domain.model.{AuthToken, GameVersion, MatchCharacters, MatchRecord, Player, PlayerId, PlayerName, ReplayId}
 import wvlet.airframe.codec.MessageCodec
 import scodec.bits.ByteVector
@@ -36,7 +36,7 @@ object MessagePackCodec:
     stringToHex(loginJson)
   }
 
-  def replayEncoder(replayRequest: ReplayRequest, token: AuthToken, playerId: PlayerId, gameVersion: GameVersion): String = {
+  def replayEncoder(replayLimit: Int, token: AuthToken, playerId: PlayerId, gameVersion: GameVersion): String = {
     val replayJson: String = s"""[
          |    [
          |        "${playerId.value}",
@@ -49,10 +49,10 @@ object MessagePackCodec:
          |        7,
          |        1,
          |        0,
-         |        ${replayRequest.limit},
+         |        $replayLimit,
          |        [
          |            ${gameVersion.value},
-         |            ${replayRequest.character},
+         |            -1,
          |            104,
          |            1,
          |            -1,

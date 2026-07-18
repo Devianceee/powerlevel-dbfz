@@ -18,29 +18,22 @@ jobs:
           script: |
             set -e
 
-            echo "Logging into GHCR..."
+            cd /opt/powerlevel
 
-            echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io \
-              -u "${{ github.actor }}" \
-              --password-stdin
+            echo "Stopping service..."
+
+            sudo docker compose stop app
 
             echo "Pulling latest image..."
 
-            sudo docker pull ghcr.io/devianceee/powerlevel-dbfz:latest
+            sudo docker compose pull
 
             echo "Running backfill..."
 
-            sudo docker run --rm \
-            --network powerlevel_default \
-            -e DB_HOST=powerlevel-postgres \
-            -e DB_PORT=5432 \
-            -e DB_USER=powerlevel \
-            -e DB_NAME=powerlevel \
-            -e DBFZ_STEAM_ID="${{ vars.DBFZ_STEAM_ID }}" \
-            -e R2_ACCESS_KEY_ID="${{ secrets.R2_ACCESS_KEY_ID }}" \
-            -e R2_SECRET_KEY="${{ secrets.R2_SECRET_KEY }}" \
-            -e R2_ACCOUNT_ID="${{ secrets.R2_ACCOUNT_ID }}" \
-            ghcr.io/devianceee/powerlevel-dbfz:latest \
-            --backfill
+            sudo docker compose run --rm app --backfill
+
+            echo "Starting service..."
+
+            sudo docker compose up -d app
 
             echo "Backfill complete"

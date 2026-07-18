@@ -26,8 +26,7 @@ COPY --from=build /app/target/scala-3*/app.jar app.jar
 
 EXPOSE 8080
 
-# 5. Safe production defaults for a 4GB system (Overridable via systemd if needed)
-ENV JAVA_OPTS="-Xms512m -Xmx1024m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC"
+# JVM options are automatically picked up by the JVM
+ENV JAVA_TOOL_OPTIONS="-Xms512m -Xmx1024m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC"
 
-# 6. Shell form wrapped with 'exec' to expand $JAVA_OPTS while catching system signals
-ENTRYPOINT exec java $JAVA_OPTS -jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]

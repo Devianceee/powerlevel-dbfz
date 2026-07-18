@@ -1,0 +1,43 @@
+name: Backfill
+
+on:
+  workflow_dispatch:
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run backfill on VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+
+          script: |
+            set -e
+
+            echo "Logging into GHCR..."
+
+            echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io \
+              -u "${{ github.actor }}" \
+              --password-stdin
+
+            echo "Pulling latest image..."
+
+            sudo docker pull ghcr.io/devianceee/powerlevel-dbfz:latest
+
+            echo "Running backfill..."
+
+            sudo docker run --rm \
+              --network powerlevel_default \
+              -e DBFZ_STEAM_ID="${{ vars.DBFZ_STEAM_ID }}" \
+              -e DATABASE_URL="jdbc:postgresql://powerlevel-postgres:5432/powerlevel" \
+              -e R2_ACCESS_KEY_ID="${{ secrets.R2_ACCESS_KEY_ID }}" \
+              -e R2_SECRET_KEY="${{ secrets.R2_SECRET_KEY }}" \
+              -e R2_ACCOUNT_ID="${{ secrets.R2_ACCOUNT_ID }}" \
+              ghcr.io/devianceee/powerlevel-dbfz:latest \
+              --backfill
+
+            echo "Backfill complete"

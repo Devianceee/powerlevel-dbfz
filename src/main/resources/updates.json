@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-18",
+    "type": "feat",
+    "title": "Backfill + outage",
+    "changes": [
+      "An outage occurred for 2 days without notice, have added a backfill to fill in missing games",
+      "Better error handling"
+    ]
+  },
+  {
     "date": "2026-07-10",
     "type": "feat",
     "title": "UI updates",

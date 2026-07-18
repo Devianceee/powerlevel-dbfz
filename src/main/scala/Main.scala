@@ -9,13 +9,13 @@ object Main extends IOApp {
         args match {
           case "--backfill" :: Nil =>
             for {
-              _    <- IO.println("Starting backfill...")
-              _    <- app.backfill.run
-              _    <- IO.println("Backfill complete.")
-              code <- App.runServer(config, app)
-            } yield code
+              _ <- IO.println("Starting backfill...")
+              _ <- app.backfill.run
+              _ <- IO.println("Backfill complete.")
+            } yield ExitCode.Success
 
-          case _ => App.runServer(config, app)
+          case _ =>
+            App.runServer(config, app)
         }
       }
     } yield exitCode

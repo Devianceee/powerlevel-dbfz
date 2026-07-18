@@ -20,6 +20,12 @@ jobs:
 
             cd /opt/powerlevel
 
+            echo "Logging into GHCR..."
+
+            echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io \
+              -u "${{ github.actor }}" \
+              --password-stdin
+
             echo "Stopping service..."
 
             sudo docker compose stop app
